@@ -1,0 +1,91 @@
+# Enable extended globbing for advanced patterns
+setopt EXTENDED_GLOB
+
+# Skip global compinit for faster startup
+skip_global_compinit=1
+
+# Initialize completion system with daily cache
+autoload -Uz compinit
+# shellcheck disable=SC1036,SC1072
+if [[ -n ${HOME}/.zcompdump(#qN.mh+24) ]]; then
+    compinit
+else
+    compinit -C
+fi
+
+# History configuration
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+
+# History settings
+setopt SHARE_HISTORY          # Share history between all sessions
+setopt HIST_IGNORE_ALL_DUPS   # Remove older duplicate entries
+setopt HIST_FIND_NO_DUPS      # Skip duplicates when searching
+setopt HIST_REDUCE_BLANKS     # Remove unnecessary blanks
+setopt HIST_IGNORE_SPACE      # Ignore entries starting with space
+
+# Directory navigation
+setopt AUTO_CD
+setopt AUTO_PUSHD
+setopt PUSHD_IGNORE_DUPS
+setopt PUSHD_MINUS
+
+# PATH management
+typeset -U path  # Ensure unique PATH entries
+
+# Source zinit plugin manager
+source "${HOME}/.local/share/zinit/zinit.git/zinit.zsh"
+
+# Command suggestions
+zinit ice wait lucid atload'!_zsh_autosuggest_start'
+zinit light zsh-users/zsh-autosuggestions
+
+# Syntax highlighting
+zinit ice wait lucid atinit"ZINIT[COMPINIT_OPTS]=-C; zicompinit; zicdreplay"
+zinit light zdharma-continuum/fast-syntax-highlighting
+
+# History search (load immediately for key bindings)
+zinit light zsh-users/zsh-history-substring-search
+
+# Load git plugin if it exists
+GIT_PLUGIN="${HOME}/.local/share/zinit/snippets/omz-git/git.plugin.zsh"
+if [[ -f "${GIT_PLUGIN}" ]]; then
+    zinit ice wait lucid
+    zinit for "${GIT_PLUGIN}"
+fi
+
+# Basic key bindings
+bindkey '^[[C' forward-char                   # Right arrow
+bindkey '^[[D' backward-char                  # Left arrow
+bindkey '^[[1;5C' forward-word                # Ctrl+Right
+bindkey '^[[1;5D' backward-word               # Ctrl+Left
+bindkey '^ ' autosuggest-accept               # Ctrl+Space to accept suggestion
+
+# History search key bindings
+bindkey '^[[A' history-substring-search-up     # Up arrow for history search
+bindkey '^[[B' history-substring-search-down   # Down arrow for history search
+bindkey '^[OA' history-substring-search-up     # Up arrow (alternate)
+bindkey '^[OB' history-substring-search-down   # Down arrow (alternate)
+
+# Completion settings
+zstyle ':completion:*' menu select               # Interactive menu
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'  # Case insensitive
+zstyle ':completion:*' use-cache on              # Enable caching
+zstyle ':completion:*' cache-path ${HOME}/.cache/zsh
+
+# Suggestion settings
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)    # Suggest from history and completions
+ZSH_AUTOSUGGEST_USE_ASYNC=true                  # Async suggestions
+ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20              # Limit suggestion size
+
+# Allow "#" in shell
+setopt interactive_comments
+
+# Key bindings
+bindkey "^[[2~" overwrite-mode      	# Insert
+bindkey "^[[H" beginning-of-line    	# Home
+bindkey "^[[5~" up-line-or-history  	# Page Up
+bindkey "^[[3~" delete-char         	# Delete
+bindkey "^[[F" end-of-line          	# End
+bindkey "^[[6~" down-line-or-history 	# Page Down

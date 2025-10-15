@@ -1,0 +1,167 @@
+exclude: {{ and (notInPath "docker") (notInPath "podman") }}
+---
+commands:
+  - name: container
+    doc: alias container to docker or podman
+    cmd: {{ if inPath "docker" }}docker{{ else if inPath "podman" }}podman{{ else }}echo "No container runtime found"{{ end }}
+    exclude: {{ inPath "container" }}
+
+  - name: cs
+    doc: alias for container
+    cmd: container
+
+  - name: dcr
+    doc: container compose run
+    cmd: container compose run --remove-orphans --rm
+
+  - name: dcrb
+    doc: container compose run with build
+    cmd: container compose run --build --remove-orphans --rm
+
+  - name: dcrr
+    doc: container compose down and up
+    cmd: container compose down --remove-orphans; container compose up -d --remove-orphans
+
+  - name: dcb
+    doc: container compose build
+    cmd: container compose build
+
+  - name: dcbr
+    doc: container compose rebuild
+    cmd: container compose build --no-cache
+
+  - name: dcbc
+    doc: container compose build with cache bust
+    cmd: container compose build --build-arg CACHE_BUST=$(date +%s)
+
+  - name: dcd
+    doc: container compose down
+    cmd: container compose down --remove-orphans
+
+  - name: dcu
+    doc: container compose up
+    cmd: container compose up -d --remove-orphans
+
+  - name: dcp
+    doc: container compose pull
+    cmd: container compose pull || container compose pull --ignore-buildable
+
+  - name: dcpu
+    doc: container compose push
+    cmd: container compose push
+
+  - name: dcs
+    doc: container compose stop
+    cmd: container compose stop
+
+  - name: dri
+    doc: container image rm
+    cmd: container rmi -f
+
+  - name: drc
+    doc: container container rm
+    cmd: container rm -f
+
+  - name: dl
+    doc: container logs
+    cmd: container logs
+
+  - name: de
+    doc: container exec interactively
+    cmd: container exec -it
+
+  - name: dr
+    doc: container run, override entrypoint
+    cmd: container run -it --rm --entrypoint=
+
+  - name: dp
+    doc: container prune
+    cmd: container container prune --force
+
+  - name: debian
+    doc: run debian trixie
+    cmd: container run -it --rm debian:trixie bash
+
+  - name: curld
+    doc: run curl image
+    cmd: container run -it --rm curlimages/curl:latest ash
+
+  - name: dbx
+    doc: docker buildx bake and push for multi-arch
+    cmd: docker buildx bake --push --set "*.platform=linux/arm64,linux/amd64"
+
+  - name: dsp
+    doc: container system prune
+    kind: function
+    cmd: |
+      container system prune -af
+      if command -v docker >/dev/null 2>&1; then
+        echo "Also cleaning buildx history"
+        docker buildx history rm --all
+      fi
+
+  - name: dex
+    doc: container exists
+    kind: function
+    cmd: |
+      if [ -z "${1}" ]; then
+        echo "Usage: dex <container> [command]"
+        return 1
+      fi
+      if container ps -aq -f name="${1}" | grep -q .; then
+        echo "${1} exists"
+
+        return 0
+      else
+        echo "${1} does not exist"
+
+        return 1
+      fi
+
+  - name: dwhoami
+    doc: whoami in all running containers
+    kind: function
+    cmd: |
+      container ps --format '{{ "{{" }}.Names{{ "}}" }}' | while read container; do
+        echo "Container: ${container}"
+        container exec "${container}" id
+        echo "---"
+      done
+
+  - name: netshoot
+    doc: run netshoot container
+    kind: function
+    cmd: |
+      if [ -z "${1}" ]; then
+        container run -it nicolaka/netshoot bash
+      elif [ "${1}" = "--host" ]; then
+        container run -it --net host nicolaka/netshoot bash
+      else
+        container run -it --net container:${1} nicolaka/netshoot bash
+      fi
+
+  - name: dra
+    doc: docker run, override entrypoint and try bash, ash, sh in sequence
+    kind: function
+    cmd: |
+      if [ -z "${1}" ]; then
+        echo "Usage: dra <image>"
+        return 1
+      fi
+
+      dr ${1} bash 2>/dev/null || dr ${1} ash 2>/dev/null || dr ${1} sh
+
+      return $?
+
+  - name: dea
+    doc: docker exec, try bash, ash, sh in sequence
+    kind: function
+    cmd: |
+      if [ -z "${1}" ]; then
+        echo "Usage: dea <container>"
+        return 1
+      fi
+
+      de ${1} bash 2>/dev/null || de ${1} ash 2>/dev/null || de ${1} sh
+
+      return $?

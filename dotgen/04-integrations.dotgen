@@ -1,0 +1,145 @@
+values:
+  DOTGEN_SOURCE_DIR: "{{ .CACHE_DIR }}/dotgen/{{ .SHELL }}/source/integrations"
+
+  # Forces a rerun if any tool is added/removed
+  deps:
+    starship: "{{ path "starship" | size }}"
+    zoxide: "{{ path "zoxide" | size }}"
+    direnv: "{{ path "direnv" | size }}"
+    gh: "{{ path "gh" | size }}"
+    slot: "{{ path "slot" | size }}"
+    task: "{{ path "task" | size }}"
+    atuin: "{{ path "atuin" | size }}"
+    kubectl: "{{ path "kubectl" | size }}"
+    code: "{{ path "code" | size }}"
+    task.rc: "{{ path .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
+    fzf: "{{ path "fzf" | size }}"
+    fzf-docker.rc: "{{ path .DOTGEN_CURRENT_DIR "rc/02-fzf-docker.rc" | size }}"
+
+---
+
+commands:
+  - name: starship integration
+    doc: starship shell integration
+    kind: run
+    cmd: starship init --print-full-init "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/00-starship.rc
+    exclude: {{ notInPath "starship" }}
+
+  - name: zoxide integration
+    doc: zoxide shell integration
+    kind: run
+    cmd: zoxide init "{{ .SHELL }}" --cmd cd
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/01-zoxide.rc
+    exclude: {{ notInPath "zoxide" }}
+
+  - name: direnv integration
+    doc: direnv shell integration
+    kind: run
+    cmd: direnv hook "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/02-direnv.rc
+    exclude: {{ notInPath "direnv" }}
+
+  - name: gh copilot integration
+    doc: gh copilot shell integration
+    kind: run
+    cmd: |
+      gh copilot >/dev/null 2>&1 && gh copilot alias -- {{ .SHELL }}
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/03-gh-copilot.rc
+    exclude: {{ notInPath "gh" }}
+
+  - name: slot integration
+    doc: slot shell integration
+    kind: run
+    cmd: slot init "{{ .SHELL }}" --fzf
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/04-slot.rc
+    exclude: {{ notInPath "slot" }}
+
+  - name: task integration
+    doc: task shell integration
+    kind: run
+    cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/01-task.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/05-task.rc
+    exclude: {{ notInPath "task" }}
+    shell:
+      - zsh
+
+  - name: atuin integration
+    doc: atuin shell integration
+    kind: run
+    cmd: atuin init --disable-up-arrow "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/06-atuin.rc
+    exclude: {{ notInPath "atuin" }}
+
+  - name: kubectl integration
+    doc: kubectl aliases
+    kind: run
+    cmd: curl https://raw.githubusercontent.com/ahmetb/kubectl-aliases/refs/heads/master/.kubectl_aliases
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/07-kubectl.rc
+    exclude: {{ notInPath "kubectl" }}
+
+  - name: fzf integration
+    doc: fzf shell integration
+    kind: run
+    cmd: |
+      echo "export FZF_COMPLETION_TRIGGER=','"
+      fzf --"{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/08-fzf.rc
+    exclude: {{ notInPath "fzf" }}
+
+  - name: fzf-docker integration
+    doc: fzf-docker shell integration
+    kind: run
+    cmd: |
+      cat {{ .DOTGEN_CURRENT_DIR }}/rc/02-docker-fzf.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/09-docker-fzf.rc
+    exclude: {{ or (notInPath "fzf") (notInPath "docker") }}
+    shell:
+      - zsh
+
+  - name: dirstat-rm
+    doc: dirstat fzf integration
+    kind: function
+    cmd: |
+      local output
+      output=$(dirstat "$@" 2>&1)
+      if [[ $? -ne 0 ]]; then
+        echo "${output}" >&2
+
+        return 1
+      fi
+      local files=$(
+        awk '/^  [0-9]+\)/ {
+          $1 = "";
+          sub(/^[ \t]+/, "");
+          printf "%s\t%s %s\n", $1, $2, $3
+        }' <<< "$output" | awk '{a[NR]=$0} END {for(i=NR;i>0;i--) print a[i]}' |
+        SHELL={{ path "zsh" }} fzf --wrap --multi \
+            --delimiter=$'\t' \
+            --with-nth=1 \
+            --preview-window=wrap \
+            --preview='command ls -Alh --group-directories-first --time-style=long-iso --color=always -- {1} | awk "{NF--; print}"'
+      )
+
+      if [[ -n "${files}" ]]; then
+        local cmd=""
+        while IFS= read -r file; do
+          cmd+="rm -f -- ${${file%%$'\t'*}:q}"$'\n'
+        done <<< "$files"
+        print -z "${cmd%$'\n'}"
+      fi
+    exclude: {{ notInPath "dirstat" }}
+    shell:
+      - zsh
+
+{{ if false }}
+# Disabled since it messed with atuin
+  - name: vscode integration
+    doc: vscode shell integration
+    kind: run
+    cmd: |
+      vscode_path="$(code --locate-shell-integration-path "{{ .SHELL }}" | tr '\\' '/')"
+      cat "${vscode_path}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/00-vscode.rc
+    exclude: {{ notInPath "code" }}
+{{ end }}

@@ -1,0 +1,116 @@
+[push]
+	autoSetupRemote = true
+
+[branch]
+    sort = -committerdate
+
+[tag]
+    sort = -version:refname
+
+[column]
+    ui = auto
+
+[core]
+    compression = 9
+    autocrlf = input
+	pager = diff-so-fancy | less --tabs=4 -RF
+
+[interactive]
+	diffFilter = diff-so-fancy --patch
+
+[status]
+    branch = true
+
+[maintenance]
+    auto = true
+    strategy = incremental
+
+[help]
+    autocorrect = prompt
+
+[alias]
+    graph = log --all --graph --decorate --oneline
+    l = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+    ignore = "!gi() { local IFS=','; curl -sL https://www.toptal.com/developers/gitignore/api/\"$*\"; }; gi"
+
+	change-commits = "!f() { VAR=$1; OLD=$2; NEW=$3; shift 3; git filter-branch -f --env-filter \"if [[ \\\"$`echo $VAR`\\\" = '$OLD' ]]; then export $VAR='$NEW'; fi\" $@; }; f"
+
+    r = "!f() { \
+        echo "--- Normalizing"; \
+        git add --renormalize .; \
+    }; f"
+
+    co = "!f() { \
+        echo "--- Adding"; \
+        git add .; \
+        echo "--- Committing"; \
+        git commit -am \"${1:-[no description]}\"; \
+        echo "--- Pushing"; \
+        git push; \
+    }; f"
+
+    p = "!f() { \
+        gocom --pizzaz --stage --readme --commit --push --yes; \
+    }; f"
+
+    c = "!f() { \
+        echo '--- Adding'; \
+        git add .; \
+        if [ -n \"$1\" ]; then \
+            echo '--- Committing'; \
+            git commit -am \"$1\"; \
+        else \
+            if curl -s --max-time 1 http://localhost:11434 | grep -q 'Ollama is running'; then \
+                echo '--- Generating commit message and committing'; \
+                gocom --readme --commit --yes; \
+            else \
+                echo '--- Committing'; \
+                git commit -am '[no description]'; \
+            fi; \
+        fi; \
+        echo '--- Pushing'; \
+        git push; \
+    }; f"
+
+    cl = "!f() { \
+        echo "--- Adding"; \
+        git add .; \
+        echo "--- Generating commit message and committing"; \
+        gocom --commit --yes; \
+        echo "--- Pushing"; \
+        git push; \
+    }; f"
+
+
+    cs = "!f() { \
+        echo "--- Adding"; \
+        git add .; \
+        echo "--- Committing"; \
+        git commit -am \"${1:-[skipping ci]}\"; \
+        echo "--- Pushing"; \
+        git push -o ci.skip; \
+    }; f"
+
+    cf = "!f() { \
+        echo \"$(date)\" > __auto__; \
+        git c \"${1:-[forced commit]}\"; \
+        rm __auto__; \
+    }; f"
+
+    s = "!f() { \
+	    git submodule add https://github.com/idelchi/devenv.git .devenv ; \
+		git submodule set-branch -b main .devenv ; \
+		git submodule update --recursive --remote ; \
+    }; f"
+
+    m = "!f() { \
+        source_branch=${1:-main}; \
+        current_branch=$(git rev-parse --abbrev-ref HEAD); \
+        if [ \"$current_branch\" = \"$source_branch\" ]; then \
+            echo \"Cannot merge $source_branch into itself.\"; \
+            return 1; \
+        fi; \
+        git fetch origin $source_branch; \
+        git merge origin/$source_branch; \
+        git push origin $current_branch; \
+    }; f"

@@ -1,0 +1,5 @@
+vars:
+  OS: "{{ .OS }}"
+  ARCH: "{{ .ARCHITECTURE }}"
+  PLATFORM: "{{ .PLATFORM }}"
+  SHELL: "{{ path .SHELL }}"

@@ -1,0 +1,3 @@
+RESOLVED_HOME=${HOME:-${HOMEPATH:-${USERPROFILE}}}
+BASH_RC=${RESOLVED_HOME}/.bashrc
+[ -f ${BASH_RC} ] && source ${BASH_RC}

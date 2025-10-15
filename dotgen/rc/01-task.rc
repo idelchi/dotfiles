@@ -1,0 +1,54 @@
+# Ctrl-B: pick a Taskfile task and run/insert
+zmodload zsh/zle
+
+task-pick-and-run() {
+  emulate -L zsh
+  set -o pipefail
+  local out key choice rc task_out
+  local -a fields
+  local name
+
+  task_out=$(task --list-all 2>&1); rc=$?
+  if (( rc != 0 )); then
+    zle -I                      # clear any lingering mini-buffer msg
+    print -r -- "$task_out"     # show exactly what the user would see
+    return $rc
+  fi
+
+  out=$(
+    awk '
+      /^\* /{
+        line=substr($0,3)
+        if (match(line,/^([^[:space:]]+):[[:space:]]+(.*)$/,m)) {
+          raw=m[1]; desc=m[2]
+          pad=sprintf("%-24s", raw)
+          printf "%s\t%s\t%s\n", raw, pad, desc
+        }
+      }' <<<"$task_out" | fzf \
+        --prompt="task> " \
+        --height=40% \
+        --layout=reverse-list \
+        --header $'ENTER: run  TAB: insert' \
+        --delimiter=$'\t' \
+        --with-nth=2,3 \
+        --tabstop=16 \
+        --expect=enter,tab
+  ) || { zle reset-prompt; return }
+
+  key=${out%%$'\n'*}
+  choice=${out#*$'\n'}
+  [[ -z $choice || $choice = "$key" ]] && { zle reset-prompt; return }
+
+  fields=("${(@ps:\t:)choice}")
+  name=${fields[1]}
+
+  case $key in
+    enter) BUFFER="task ${name}"; zle accept-line; return ;;
+    tab)   BUFFER="task ${name}" ;;
+  esac
+
+  CURSOR=${#BUFFER}
+  zle redisplay
+}
+zle -N task-pick-and-run
+bindkey '^B' task-pick-and-run

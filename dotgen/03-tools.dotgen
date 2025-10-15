@@ -1,0 +1,86 @@
+env:
+  {{ if inPath "rip" }}
+  RIP_GRAVEYARD: "{{ .HOME }}/.local/share/trash"
+  {{ end }}
+  {{ if inPath "direnv" }}
+  DIRENV_BASH: "{{ path "bash" }}"
+  {{ end }}
+
+commands:
+  - name: gp
+    doc: git pull
+    cmd: git pull
+
+  - name: grh
+    doc: git reset hard to dev branch
+    cmd: git reset --hard origin/dev
+
+  - name: grhm
+    doc: git reset hard to main branch
+    cmd: git reset --hard origin/main
+
+  - name: n
+    doc: nano text editor
+    cmd: nano
+    exclude: {{ notInPath "nano" }}
+
+  - name: m
+    doc: micro text editor
+    cmd: micro
+    exclude: {{ notInPath "micro" }}
+
+  - name: md
+    doc: create and enter a new directory
+    kind: function
+    cmd: |
+      mkdir -p "${1}" && cd $_;
+
+  - name: lk
+    doc: cd using walk
+    kind: function
+    cmd: |
+      cd "$(walk "$@")"
+    exclude: {{ notInPath "walk" }}
+
+  - name: ls
+    doc: Modern replacement for ls command
+    cmd: eza
+    exclude: {{ notInPath "eza" }}
+
+  - name: cat
+    doc: Modern replacement for cat command
+    cmd: bat
+    exclude: {{ notInPath "bat" }}
+
+  - name: trash
+    doc: Clean rip trash
+    cmd: rip --decompose && rm -rf "${RIP_GRAVEYARD}"
+    exclude: {{ notInPath "rip" }}
+
+  - name: ownership
+    doc: List files with their ownership
+    kind: function
+    cmd: |
+      find ${1-.} -type f -exec ls -al {} \;
+
+  - name: epx
+    doc: Execute command within envprof profile
+    cmd: envprof exec -I --
+    exclude: {{ notInPath "envprof" }}
+
+  - name: epf
+    doc: Run envprof
+    cmd: envprof
+    exclude: {{ notInPath "envprof" }}
+
+  - name: epex
+    doc: Export envprof profile to current shell
+    kind: function
+    cmd: |
+      local output
+      if output="$(envprof ${1:+--profile} ${1:+"${1}"} export 2>&1)"; then
+        eval "${output}"
+      else
+        echo "${output}" >&2
+      fi
+    exclude: {{ notInPath "envprof" }}

@@ -1,0 +1,3 @@
+RESOLVED_HOME=${HOME:-${HOMEPATH:-${USERPROFILE}}}
+ZSH_RC=${RESOLVED_HOME}/.zshrc
+[ -f ${ZSH_RC} ] && source ${ZSH_RC}

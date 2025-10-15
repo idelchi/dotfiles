@@ -1,0 +1,218 @@
+FZF_DOCKER_PS_FORMAT="table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}"
+FZF_DOCKER_PS_START_FORMAT="table {{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Image}}"
+
+_fzf_complete_docker() {
+  local lbuf=$1
+  local tokens=(${(z)lbuf})
+  local subcommand="${tokens[2]:-}"
+
+  if [[ ${#tokens} -eq 1 ]]; then
+    # Just "docker " - show all commands
+    local docker_commands=$(docker --help 2>&1 >/dev/null |
+      sed -n -e '/Management Commands:/,$p' |
+      grep -v "Management Commands:" |
+      grep -v "Commands:" |
+      grep -v 'COMMAND --help' |
+      grep .)
+    local selected=$(echo "$docker_commands" | fzf --reverse -n 1 --height=80% --expect=enter)
+
+    if [[ -n "$selected" ]]; then
+      local key=$(echo "$selected" | head -1)
+      local result=$(echo "$selected" | tail -1 | awk '{print $1}')
+      LBUFFER="${lbuf}${result} "
+      zle reset-prompt
+    fi
+
+  elif [[ $subcommand == "tag" ]]; then
+    local images_output=$(docker images --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.ID}}\t{{.CreatedSince}}")
+    local selected=$(echo "$images_output" | fzf --header-lines=1 --expect=enter,tab)
+
+    if [[ -n "$selected" ]]; then
+      local key=$(echo "$selected" | head -1)
+      local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+      LBUFFER="${lbuf}${result} "
+      zle reset-prompt
+      [[ "$key" == "enter" ]] && zle accept-line
+    fi
+
+  elif [[ $subcommand == "push" ]]; then
+    local images_output=$(docker images --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.ID}}\t{{.CreatedSince}}")
+    local selected=$(echo "$images_output" | fzf --header-lines=1 --expect=enter,tab)
+
+    if [[ -n "$selected" ]]; then
+      local key=$(echo "$selected" | head -1)
+      local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+      LBUFFER="${lbuf}${result} "
+      zle reset-prompt
+      [[ "$key" == "enter" ]] && zle accept-line
+    fi
+
+  elif [[ $subcommand == "run" ]]; then
+    local images_output=$(docker images --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.ID}}\t{{.CreatedSince}}")
+    local selected=$(echo "$images_output" | fzf --header-lines=1 --expect=enter,tab)
+
+    if [[ -n "$selected" ]]; then
+      local key=$(echo "$selected" | head -1)
+      local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+      LBUFFER="${lbuf}${result} "
+      zle reset-prompt
+      [[ "$key" == "enter" ]] && zle accept-line
+    fi
+
+
+  elif [[ $subcommand == "exec" ]]; then
+    local containers_output=$(docker ps --format "${FZF_DOCKER_PS_FORMAT}")
+    local selected=$(echo "$containers_output" | fzf --header-lines=1 --expect=enter)
+
+    if [[ -n "$selected" ]]; then
+      local key=$(echo "$selected" | head -1)
+      local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+      LBUFFER="${lbuf}${result} "
+      zle reset-prompt
+      [[ "$key" == "enter" ]] && zle accept-line
+    fi
+
+  elif [[ $subcommand == "rmi" ]]; then
+    local images_output=$(docker images --format "table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}")
+    local selected=$(echo "$images_output" | fzf --multi --header-lines=1 --expect=enter)
+
+    if [[ -n "$selected" ]]; then
+      local key=$(echo "$selected" | head -1)
+      local result=$(echo "$selected" | tail -n +2 | awk '{print $1}' | tr '\n' ' ')
+      LBUFFER="${lbuf}${result}"
+      zle reset-prompt
+      [[ "$key" == "enter" ]] && zle accept-line
+    fi
+
+  elif [[ $subcommand == "rm" ]]; then
+    local containers_output=$(docker ps -a --format "${FZF_DOCKER_PS_FORMAT}")
+    local selected=$(echo "$containers_output" | fzf --multi --header-lines=1 --expect=enter)
+
+    if [[ -n "$selected" ]]; then
+      local key=$(echo "$selected" | head -1)
+      local result=$(echo "$selected" | tail -n +2 | awk '{print $1}' | tr '\n' ' ')
+      LBUFFER="${lbuf}${result}"
+      zle reset-prompt
+      [[ "$key" == "enter" ]] && zle accept-line
+    fi
+
+  elif [[ $subcommand == "logs" ]]; then
+    local containers_output=$(docker ps -a --format "${FZF_DOCKER_PS_FORMAT}")
+    local selected=$(echo "$containers_output" | fzf --header-lines=1 \
+      --header 'TAB: insert | ENTER: insert+execute | CTRL-O: open in editor | CTRL-/: resize' \
+      --bind 'ctrl-/:change-preview-window(80%,border-bottom|)' \
+      --bind "ctrl-o:execute:docker logs {1} | sed 's/\x1b\[[0-9;]*m//g' | cat | ${EDITOR:-vim} -" \
+      --preview-window up:follow \
+      --preview 'docker logs --follow --tail=100 {1}' \
+      --expect=enter,tab)
+
+    if [[ -n "$selected" ]]; then
+      local key=$(echo "$selected" | head -1)
+      local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+      LBUFFER="${lbuf}${result} "
+      zle reset-prompt
+      [[ "$key" == "enter" ]] && zle accept-line
+    fi
+
+  fi
+}
+
+_fzf_complete_docker_post() {
+  awk '{print $1}'
+}
+
+# Alias completions
+_fzf_complete_dri() {
+  local lbuf=$1
+
+  local images_output=$(docker images --format "table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}")
+  local selected=$(echo "$images_output" | fzf --multi --header-lines=1 --expect=enter)
+
+  if [[ -n "$selected" ]]; then
+    local key=$(echo "$selected" | head -1)
+    local result=$(echo "$selected" | tail -n +2 | awk '{print $1}' | tr '\n' ' ')
+    LBUFFER="dri ${result}"
+    zle reset-prompt
+    [[ "$key" == "enter" ]] && zle accept-line
+  fi
+}
+
+_fzf_complete_drc() {
+  local lbuf=$1
+
+  local containers_output=$(docker ps -a --format "${FZF_DOCKER_PS_FORMAT}")
+  local selected=$(echo "$containers_output" | fzf --multi --header-lines=1 --expect=enter)
+
+  if [[ -n "$selected" ]]; then
+    local key=$(echo "$selected" | head -1)
+    local result=$(echo "$selected" | tail -n +2 | awk '{print $1}' | tr '\n' ' ')
+    LBUFFER="drc ${result}"
+    zle reset-prompt
+    [[ "$key" == "enter" ]] && zle accept-line
+  fi
+}
+
+_fzf_complete_dr() {
+  local lbuf=$1
+
+  local images_output=$(docker images --format "table {{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.ID}}\t{{.CreatedSince}}")
+  local selected=$(echo "$images_output" | fzf --header-lines=1 --expect=enter,tab)
+
+  if [[ -n "$selected" ]]; then
+    local key=$(echo "$selected" | head -1)
+    local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+    if [[ "$key" == "enter" ]]; then
+      LBUFFER="dra ${result} "
+    else
+      LBUFFER="dr ${result} "
+    fi
+    zle reset-prompt
+    [[ "$key" == "enter" ]] && zle accept-line
+  fi
+}
+
+_fzf_complete_de() {
+  local lbuf=$1
+
+  local containers_output=$(docker ps --format "${FZF_DOCKER_PS_FORMAT}")
+  local selected=$(echo "$containers_output" | fzf --header-lines=1 --expect=enter,tab)
+
+  if [[ -n "$selected" ]]; then
+    local key=$(echo "$selected" | head -1)
+    local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+    if [[ "$key" == "enter" ]]; then
+      LBUFFER="dea ${result} "
+    else
+      LBUFFER="de ${result} "
+    fi
+    zle reset-prompt
+    [[ "$key" == "enter" ]] && zle accept-line
+  fi
+}
+
+_fzf_complete_dl() {
+  local lbuf=$1
+
+  local containers_output=$(docker ps -a --format "${FZF_DOCKER_PS_FORMAT}")
+  local selected=$(echo "$containers_output" | fzf --header-lines=1 \
+    --header 'TAB: insert | ENTER: insert+execute | CTRL-O: open in editor | CTRL-/: resize' \
+    --bind 'ctrl-/:change-preview-window(80%,border-bottom|)' \
+    --bind "ctrl-o:execute:docker logs {1} | sed 's/\x1b\[[0-9;]*m//g' | cat | ${EDITOR:-vim} -" \
+    --preview-window up:follow \
+    --preview 'docker logs --follow --tail=100 {1}' \
+    --expect=enter,tab)
+
+  if [[ -n "$selected" ]]; then
+    local key=$(echo "$selected" | head -1)
+    local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+    LBUFFER="dl ${result} "
+    zle reset-prompt
+    [[ "$key" == "enter" ]] && zle accept-line
+  fi
+}
+
+_fzf_complete_dri_post() { _fzf_complete_docker_post }
+_fzf_complete_drc_post() { _fzf_complete_docker_post }
+_fzf_complete_dr_post() { _fzf_complete_docker_post }
+_fzf_complete_de_post() { _fzf_complete_docker_post }
+_fzf_complete_dl_post() { _fzf_complete_docker_post }

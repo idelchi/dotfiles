@@ -1,0 +1,113 @@
+values:
+  GODYL_VERSION: "v0.1.0"
+  GODYL_INSTALL_OUTPUT:
+    {{ if exists "D:/DevEnv/bin" -}}
+      D:/DevEnv/bin
+    {{- else if exists "C:/DevEnv/bin" -}}
+      C:/DevEnv/bin
+    {{- else -}}
+      .
+    {{ end }}
+
+---
+commands:
+  - name: godyld
+    doc: download and install godyl
+    cmd: >
+      curl -sSL https://raw.githubusercontent.com/idelchi/godyl/refs/heads/main/install.sh | sh -s -- -d {{ .GODYL_INSTALL_OUTPUT }} -v {{ .GODYL_VERSION }}
+
+  - name: godylu
+    doc: update godyl to the latest version
+    cmd: godyl update --pre --force
+
+  - name: godyla
+    doc: install all tools from godyl dump
+    cmd: godyl dump tools | godyl i --strategy sync - --output={{ .GODYL_INSTALL_OUTPUT }}
+
+  - name: godyli
+    doc: install all idelchi tools from godyl dump
+    cmd: godyl dump tools | godyl i --tags "idelchi/*" --pre - --output={{ .GODYL_INSTALL_OUTPUT }}
+
+  - name: aggrx
+    doc: aggregate files and copy to clipboard
+    kind: function
+    cmd: |
+      # call aggr with the original arguments and capture its output
+      output=$(aggr "$@")
+
+      # If output doesn't start with "Successfully", exit
+      if [[ ! ${output} =~ ^Successfully ]]; then
+        return
+      fi
+
+      file=$(echo "${output}" | cut -d' ' -f6-)
+
+      local winpath
+      winpath=$(cygpath -wa "${file}") || return 1
+
+      pwsh -NoProfile -STA -Command "
+        try {
+          \$ErrorActionPreference = 'Stop'
+          Add-Type -AssemblyName System.Windows.Forms | Out-Null
+
+          \$sc = New-Object System.Collections.Specialized.StringCollection
+          \$item = Get-Item -LiteralPath '$winpath'
+          [void]\$sc.Add(\$item.FullName)
+          [void][System.Windows.Forms.Clipboard]::SetFileDropList(\$sc)  # no '0' output
+
+          Write-Host '${file} copied to clipboard!'
+          exit 0
+        }
+        catch {
+          Write-Host ('failed: ' + \$_.Exception.Message)
+          exit 1
+        }
+      "
+    exclude: {{ notInPath "aggr" }}
+
+  - name: aggrc
+    doc: aggregate files and copy content to clipboard
+    kind: function
+    cmd: aggr "$@" --output="" | iconv -f UTF-8 -t UTF-16LE | clip
+
+  - name: dbbp
+    doc: build and push all docker images
+    kind: function
+    cmd: |
+      tmpdir=$(mktemp -d)
+      docker context create builder
+      docker buildx create builder --use --bootstrap
+      rm -rf "${tmpdir}"
+      BUILDX_BAKE_ENTITLEMENTS_FS=0 docker buildx bake --push --set "*.platform=linux/arm64,linux/amd64"
+      docker buildx stop
+      docker context rm builder
+      docker buildx use default
+      docker buildx rm --all-inactive -f
+      docker context use default
+      docker buildx use default
+
+  - name: coder
+    doc: run code container
+    cmd: container compose -f {{ env "DOTAI" }}/compose.yaml run --remove-orphans --rm code
+
+  - name: coderbr
+    doc: build code container
+    cmd: container compose -f {{ env "DOTAI" }}/compose.yaml run --build --remove-orphans --rm code
+
+  - name: coderb
+    doc: rebuild code container
+    cmd: container compose -f {{ env "DOTAI" }}/compose.yaml build --build-arg CACHE_BUST=$(date +%s) code
+
+  - name: gg
+    doc: open git-gui
+    cmd: git gui
+
+  - name: open
+    doc: open current or specified directory in explorer
+    kind: function
+    cmd: |
+      if [ -z "${1}" ]; then
+        explorer.exe .
+      else
+        explorer.exe "${1}"
+      fi

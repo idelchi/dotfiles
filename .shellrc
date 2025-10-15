@@ -1,0 +1,123 @@
+# Initialize dotgen for bash/zsh, rebuild if inputs changed, then source rc.
+
+# Helper functions
+debug_msg() {
+  if [[ "${SHELL_DEBUG:-}" = "true" ]]; then
+    if [[ -n "${1:-}" ]]; then
+      printf '[debug] %s\n' "${1}"
+    else
+      printf '\n'
+    fi
+  fi
+}
+
+fail() {
+  printf '%s\n' "${1}" >&2
+
+  exit 1
+}
+
+# Normalize env flags
+[[ "${REBUILD_CACHE:-}" = "true" ]] || unset REBUILD_CACHE
+[[ "${SHELL_DEBUG:-}" = "true" ]] || unset SHELL_DEBUG
+[[ "${DOTGEN_INSTRUMENT:-}" = "true" ]] || unset DOTGEN_INSTRUMENT
+
+# Detect shell and script dir
+if [[ -n "${ZSH_VERSION:-}" ]]; then
+  CURRENT_SHELL="zsh"
+  # shellcheck disable=SC2296
+  SCRIPT_DIR="$(dirname "${(%):-%N}")"
+elif [[ -n "${BASH_VERSION:-}" ]]; then
+  CURRENT_SHELL="bash"
+  SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+else
+  fail "Unsupported shell. Only bash and zsh are supported."
+fi
+
+DOTGEN_DIR="${HOME}/.cache/dotgen/${CURRENT_SHELL}"
+DOTGEN_HASH_FILE="${DOTGEN_DIR}/dotgen.hash"
+DOTGEN_RC_FILE="${DOTGEN_DIR}/dotgen.rc"
+
+# Determine if rebuild needed
+need_rebuild=false
+due_to=""
+
+# Compute new hash
+new_hash_file="$(mktemp)"
+dotgen "${SCRIPT_DIR}/dotgen/" ${DOTGEN_ADDITIONAL_ARGS} --shell "${CURRENT_SHELL}" --hash > "${new_hash_file}" || return 1
+
+if [[ "${REBUILD_CACHE:-}" = "true" ]]; then
+  need_rebuild=true
+  due_to="REBUILD_CACHE is true"
+elif [[ ! -d "${DOTGEN_DIR}" ]] || [[ ! -f "${DOTGEN_RC_FILE}" ]] || [[ ! -f "${DOTGEN_HASH_FILE}" ]]; then
+  need_rebuild=true
+  due_to="no existing cache"
+else
+  if ! cmp -s "${new_hash_file}" "${DOTGEN_HASH_FILE}"; then
+    need_rebuild=true
+    due_to="input files changed"
+  fi
+fi
+
+# Rebuild if necessary
+if [[ "${need_rebuild}" = true ]]; then
+  SHELL_DEBUG=true
+fi
+
+debug_msg "initializing shell configuration for '${CURRENT_SHELL}' from '${SCRIPT_DIR}'..."
+
+
+# Rebuild if necessary
+if [[ "${need_rebuild}" = true ]]; then
+  if ! command -v dotgen >/dev/null 2>&1; then
+    echo "Please download dotgen with:" >&2
+    # shellcheck disable=SC2016
+    echo '  curl -sSL https://raw.githubusercontent.com/idelchi/dotgen/refs/heads/main/install.sh | sh -s -- -d ${BIN_DIR}' >&2
+    rm -f "${new_hash_file}"
+    exit 1
+  fi
+
+  if [[ "${REBUILD_CACHE:-}" = "true" ]]; then
+    rm -rf "${DOTGEN_DIR}"
+  fi
+
+  debug_msg "rendering shell configuration files due to '${due_to}', outputting to '${DOTGEN_RC_FILE}'..."
+  debug_msg ""
+
+  tmp_rc_file="$(mktemp)"
+  start_ns="$(date +%s%N 2>/dev/null || echo 0)"
+
+  dotgen ${SHELL_DEBUG:+--verbose} ${DOTGEN_INSTRUMENT:+-I} \
+    "${SCRIPT_DIR}/dotgen/" ${DOTGEN_ADDITIONAL_ARGS} \
+    --shell "${CURRENT_SHELL}" > "${tmp_rc_file}" || return 1
+
+  end_ns="$(date +%s%N 2>/dev/null || echo 0)"
+  elapsed_ms=$(( (end_ns - start_ns) / 1000000 ))
+  debug_msg ""
+  debug_msg "dotgen took (${elapsed_ms} ms)"
+
+  mkdir -p "${DOTGEN_DIR}"
+  mv "${tmp_rc_file}" "${DOTGEN_RC_FILE}"
+  mv "${new_hash_file}" "${DOTGEN_HASH_FILE}"
+else
+  rm -f "${new_hash_file}"
+fi
+
+# Source result
+if [[ ! -f "${DOTGEN_RC_FILE}" ]]; then
+  fail "error: dotgen did not generate the expected file '${DOTGEN_RC_FILE}'."
+fi
+
+debug_msg "sourcing '${DOTGEN_RC_FILE}'..."
+src_start_ns="$(date +%s%N 2>/dev/null || echo 0)"
+# shellcheck disable=SC1090
+. "${DOTGEN_RC_FILE}"
+src_end_ns="$(date +%s%N 2>/dev/null || echo 0)"
+src_elapsed_ms=$(( (src_end_ns - src_start_ns) / 1000000 ))
+debug_msg ""
+debug_msg "  - took (${src_elapsed_ms} ms)"
+
+# 9) Cleanup
+unset SHELL_DEBUG REBUILD_CACHE CURRENT_SHELL SCRIPT_DIR
+unset DOTGEN_ADDITIONAL_ARGS DOTGEN_DIR DOTGEN_HASH_FILE DOTGEN_RC_FILE DOTGEN_INSTRUMENT
+unset new_hash_file tmp_rc_file start_ns end_ns elapsed_ms src_start_ns src_end_ns src_elapsed_ms need_rebuild due_to
