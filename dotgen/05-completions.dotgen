@@ -10,21 +10,40 @@ values:
 ---
 
 commands:
+  - name: task completion
+    doc: task completion
+    kind: run
+    cmd: task --completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/00-task.rc
+    exclude: {{ notInPath "task" }}
+
+  - name: docker completion
+    doc: docker completion
+    kind: run
+    cmd: docker completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/01-docker.rc
+    exclude: {{ notInPath "docker" }}
+
   - name: kubectl completion
     doc: kubectl completion
     kind: run
     cmd: kubectl completion "{{ .SHELL }}"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/00-kubectl.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/02-kubectl.rc
     exclude: {{ notInPath "kubectl" }}
 
-  - name: fzf-docker integration
-    doc: fzf-docker shell integration
+  - name: helm completion
+    doc: helm completion
     kind: run
-    cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/02-docker-fzf.rc
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/02-docker-fzf.rc
-    exclude: {{ or (notInPath "fzf") (notInPath "docker") }}
-    shell:
-      - zsh
+    cmd: helm completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/03-helm.rc
+    exclude: {{ notInPath "helm" }}
+
+  - name: k9s completion
+    doc: k9s completion
+    kind: run
+    cmd: k9s completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/04-k9s.rc
+    exclude: {{ notInPath "k9s" }}
 
   - name: kube-fzf
     doc: Shell commands using kubectl and fzf for command-line fuzzy searching of Kubernetes Pods
@@ -40,14 +59,23 @@ commands:
       {{- else -}}
       echo 'export PATH="{{ join .DOTGEN_SOURCE_DIR ".kube-fzf" | posixPath }}:$PATH"'
       {{- end }}
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/03-kube-fzf.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/05-kube-fzf.rc
     exclude: {{ or (notInPath "fzf") (notInPath "kubectl") }}
+
+  - name: fzf-docker integration
+    doc: fzf-docker shell integration
+    kind: run
+    cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/02-docker-fzf.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/06-docker-fzf.rc
+    exclude: {{ or (notInPath "fzf") (notInPath "docker") }}
+    shell:
+      - zsh
 
   - name: kubectl-fzf
     doc: A fast kubectl autocompletion with fzf
     kind: run
     cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/03-kubectl-fzf.rc
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/04-kubectl-fzf.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/07-kubectl-fzf.rc
     exclude: {{ or (notInPath "fzf") (notInPath "kubectl") (notInPath "kubectl-fzf-completion") }}
     shell:
       - zsh
