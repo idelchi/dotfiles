@@ -3,7 +3,7 @@ values:
 
   # Forces a rerun if any tool is added/removed
   deps:
-    zsh.rc: "{{ path .DOTGEN_CURRENT_DIR "rc/00-zsh.rc" | size }}"
+    zsh.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/00-zsh.rc" | size }}"
 
 ---
 

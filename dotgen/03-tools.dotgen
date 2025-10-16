@@ -3,7 +3,7 @@ env:
   RIP_GRAVEYARD: "{{ .HOME }}/.local/share/trash"
   {{ end }}
   {{ if inPath "direnv" }}
-  DIRENV_BASH: "{{ path "bash" }}"
+  DIRENV_BASH: "{{ which "bash" }}"
   {{ end }}
 
 commands:

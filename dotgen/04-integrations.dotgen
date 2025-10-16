@@ -3,18 +3,17 @@ values:
 
   # Forces a rerun if any tool is added/removed
   deps:
-    starship: "{{ path "starship" | size }}"
-    zoxide: "{{ path "zoxide" | size }}"
-    direnv: "{{ path "direnv" | size }}"
-    gh: "{{ path "gh" | size }}"
-    slot: "{{ path "slot" | size }}"
-    task: "{{ path "task" | size }}"
-    atuin: "{{ path "atuin" | size }}"
-    kubectl: "{{ path "kubectl" | size }}"
-    code: "{{ path "code" | size }}"
-    task.rc: "{{ path .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
-    fzf: "{{ path "fzf" | size }}"
-    fzf-docker.rc: "{{ path .DOTGEN_CURRENT_DIR "rc/02-fzf-docker.rc" | size }}"
+    starship: "{{ which "starship" | size }}"
+    zoxide: "{{ which "zoxide" | size }}"
+    direnv: "{{ which "direnv" | size }}"
+    gh: "{{ which "gh" | size }}"
+    slot: "{{ which "slot" | size }}"
+    task: "{{ which "task" | size }}"
+    atuin: "{{ which "atuin" | size }}"
+    kubectl: "{{ which "kubectl" | size }}"
+    code: "{{ which "code" | size }}"
+    task.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
+    fzf: "{{ which "fzf" | size }}"
 
 ---
 
@@ -71,7 +70,7 @@ commands:
     export_to: {{ .DOTGEN_SOURCE_DIR }}/06-atuin.rc
     exclude: {{ notInPath "atuin" }}
 
-  - name: kubectl integration
+  - name: kubectl aliases
     doc: kubectl aliases
     kind: run
     cmd: curl https://raw.githubusercontent.com/ahmetb/kubectl-aliases/refs/heads/master/.kubectl_aliases
@@ -87,15 +86,17 @@ commands:
     export_to: {{ .DOTGEN_SOURCE_DIR }}/08-fzf.rc
     exclude: {{ notInPath "fzf" }}
 
-  - name: fzf-docker integration
-    doc: fzf-docker shell integration
+{{ if false }}
+# Disabled since it messed with atuin
+  - name: vscode integration
+    doc: vscode shell integration
     kind: run
     cmd: |
-      cat {{ .DOTGEN_CURRENT_DIR }}/rc/02-docker-fzf.rc
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/09-docker-fzf.rc
-    exclude: {{ or (notInPath "fzf") (notInPath "docker") }}
-    shell:
-      - zsh
+      vscode_path="$(code --locate-shell-integration-path "{{ .SHELL }}" | tr '\\' '/')"
+      cat "${vscode_path}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/00-vscode.rc
+    exclude: {{ notInPath "code" }}
+{{ end }}
 
   - name: dirstat-rm
     doc: dirstat fzf integration
@@ -114,7 +115,7 @@ commands:
           sub(/^[ \t]+/, "");
           printf "%s\t%s %s\n", $1, $2, $3
         }' <<< "$output" | awk '{a[NR]=$0} END {for(i=NR;i>0;i--) print a[i]}' |
-        SHELL={{ path "zsh" }} fzf --wrap --multi \
+        SHELL={{ which "zsh" }} fzf --wrap --multi \
             --delimiter=$'\t' \
             --with-nth=1 \
             --preview-window=wrap \
@@ -131,15 +132,3 @@ commands:
     exclude: {{ notInPath "dirstat" }}
     shell:
       - zsh
-
-{{ if false }}
-# Disabled since it messed with atuin
-  - name: vscode integration
-    doc: vscode shell integration
-    kind: run
-    cmd: |
-      vscode_path="$(code --locate-shell-integration-path "{{ .SHELL }}" | tr '\\' '/')"
-      cat "${vscode_path}"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/00-vscode.rc
-    exclude: {{ notInPath "code" }}
-{{ end }}
