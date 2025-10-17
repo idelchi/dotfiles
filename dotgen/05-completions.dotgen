@@ -3,9 +3,14 @@ values:
 
   # Forces a rerun if any tool is added/removed
   deps:
+    task: "{{ which "task" | size }}"
+    docker: "{{ which "docker" | size }}"
+    helm: "{{ which "helm" | size }}"
     kubectl: "{{ which "kubectl" | size }}"
+    k9s: "{{ which "k9s" | size }}"
     kubectl-fzf-completion: "{{ which "kubectl-fzf-completion" | size }}"
-    fzf-docker.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/02-fzf-docker.rc" | size }}"
+    docker-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/02-docker-fzf.rc" | size }}"
+    kubectl-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/03-kubectl-fzf.rc" | size }}"
 
 ---
 

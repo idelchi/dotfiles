@@ -29,7 +29,7 @@ __kubectl_fzf_get_completions()
         return
     fi
     if [[ $exitCode == 6 ]]; then
-        __kubectl_fzf_debug "Unknow resource type, fallback to default completion"
+        __kubectl_fzf_debug "Unknown resource type, fallback to default completion"
         fallback="true"
         return
     fi
@@ -73,7 +73,7 @@ __kubectl_fzf_kubectl() {
         return
     fi
     if [[ "$completionOutput" == error* ]]; then
-        __kubectl_fzf_debug "Output starts with error, fallingback: $completionOutput"
+        __kubectl_fzf_debug "Output starts with error, falling back: $completionOutput"
         zle "${kubectl_fzf_default_completion:-expand-or-complete}"
         return
     fi
@@ -89,17 +89,25 @@ __kubectl_fzf_kubectl() {
 kubectl_fzf_completion() {
     local words firstWord
     setopt localoptions noshwordsplit noksh_arrays noposixbuiltins
-    
-    # Respect FZF_COMPLETION_TRIGGER - only activate if trigger is present
-    if [[ -n "$FZF_COMPLETION_TRIGGER" && "$LBUFFER" != *"$FZF_COMPLETION_TRIGGER" ]]; then
-        zle "${kubectl_fzf_default_completion:-expand-or-complete}"
-        return
+
+    # Respect FZF_COMPLETION_TRIGGER - only activate if a trailing trigger is present.
+    # Also strip the trailing trigger from LBUFFER so it doesn't leak into the command line.
+    if [[ -n "$FZF_COMPLETION_TRIGGER" ]]; then
+        # If LBUFFER ends with the trigger, remove just that final occurrence.
+        local trimmed="${LBUFFER%$FZF_COMPLETION_TRIGGER}"
+        if [[ "$trimmed" == "$LBUFFER" ]]; then
+            # No trailing trigger -> delegate to default completion.
+            zle "${kubectl_fzf_default_completion:-expand-or-complete}"
+            return
+        fi
+        # Drop the trailing trigger so ',' (or any custom token) isn't passed to kubectl.
+        LBUFFER="$trimmed"
     fi
-    
+
     words=(${(z)LBUFFER})
 
     __kubectl_fzf_debug "\n========= starting completion logic =========="
-    __kubectl_fzf_debug "LBUFFER: '$LBUFFER', words: '${words[*]}', ${#words}"
+    __kubectl_fzf_debug "LBUFFER (after trigger strip if any): '$LBUFFER', words: '${words[*]}', ${#words}"
 
     firstWord=${words[1]}
 
@@ -144,6 +152,7 @@ kubectl_fzf_completion() {
     __kubectl_fzf_kubectl
 }
 
+# Discover the default widget bound to TAB (Ctrl-I) only once.
 if [[ -z "$kubectl_fzf_default_completion" ]]; then
     binding=$(bindkey '^I')
     IFS=" " read -r -A binding_parts <<<"$binding"

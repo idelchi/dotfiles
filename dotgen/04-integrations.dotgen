@@ -11,9 +11,12 @@ values:
     task: "{{ which "task" | size }}"
     atuin: "{{ which "atuin" | size }}"
     kubectl: "{{ which "kubectl" | size }}"
-    code: "{{ which "code" | size }}"
-    task.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
     fzf: "{{ which "fzf" | size }}"
+    code: "{{ which "code" | size }}"
+    dirstat: "{{ which "dirstat" | size }}"
+
+    task.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
+    dirstat-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/04-dirstat-fzf.rc" | size }}"
 
 ---
 
@@ -86,6 +89,15 @@ commands:
     export_to: {{ .DOTGEN_SOURCE_DIR }}/08-fzf.rc
     exclude: {{ notInPath "fzf" }}
 
+  - name: dirstat-rm
+    doc: dirstat fzf integration
+    kind: run
+    cmd: sed 's|%%%|{{ which "zsh" }}|g' {{ .DOTGEN_CURRENT_DIR }}/rc/04-dirstat-fzf.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/09-dirstat-fzf.rc
+    exclude: {{ notInPath "dirstat" }}
+    shell:
+      - zsh
+
 {{ if false }}
 # Disabled since it messed with atuin
   - name: vscode integration
@@ -98,37 +110,3 @@ commands:
     exclude: {{ notInPath "code" }}
 {{ end }}
 
-  - name: dirstat-rm
-    doc: dirstat fzf integration
-    kind: function
-    cmd: |
-      local output
-      output=$(dirstat "$@" 2>&1)
-      if [[ $? -ne 0 ]]; then
-        echo "${output}" >&2
-
-        return 1
-      fi
-      local files=$(
-        awk '/^  [0-9]+\)/ {
-          $1 = "";
-          sub(/^[ \t]+/, "");
-          printf "%s\t%s %s\n", $1, $2, $3
-        }' <<< "$output" | awk '{a[NR]=$0} END {for(i=NR;i>0;i--) print a[i]}' |
-        SHELL={{ which "zsh" }} fzf --wrap --multi \
-            --delimiter=$'\t' \
-            --with-nth=1 \
-            --preview-window=wrap \
-            --preview='command ls -Alh --group-directories-first --time-style=long-iso --color=always -- {1} | awk "{NF--; print}"'
-      )
-
-      if [[ -n "${files}" ]]; then
-        local cmd=""
-        while IFS= read -r file; do
-          cmd+="rm -f -- ${${file%%$'\t'*}:q}"$'\n'
-        done <<< "$files"
-        print -z "${cmd%$'\n'}"
-      fi
-    exclude: {{ notInPath "dirstat" }}
-    shell:
-      - zsh
