@@ -216,3 +216,28 @@ _fzf_complete_drc_post() { _fzf_complete_docker_post }
 _fzf_complete_dr_post() { _fzf_complete_docker_post }
 _fzf_complete_de_post() { _fzf_complete_docker_post }
 _fzf_complete_dl_post() { _fzf_complete_docker_post }
+
+typeset -Ag _fzf_docker_map=(
+  docker _fzf_complete_docker
+  dr     _fzf_complete_dr
+  de     _fzf_complete_de
+  dl     _fzf_complete_dl
+  dri    _fzf_complete_dri
+  drc    _fzf_complete_drc
+)
+
+smart-docker-tab() {
+  emulate -L zsh -o extended_glob
+  local lbuf=$LBUFFER
+  local -a toks; toks=(${(z)lbuf})
+  local cmd=${toks[1]-}
+
+  if [[ -n ${_fzf_docker_map[$cmd]} ]]; then
+    ${_fzf_docker_map[$cmd]} "$lbuf"
+  else
+    zle fzf-tab-complete
+  fi
+}
+zle -N smart-docker-tab
+
+bindkey '^I' smart-docker-tab

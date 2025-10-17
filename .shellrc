@@ -62,6 +62,8 @@ fi
 # Rebuild if necessary
 if [[ "${need_rebuild}" = true ]]; then
   SHELL_DEBUG=true
+  # Delete everything in the cache dir except the hash file
+  find "${DOTGEN_DIR}" -mindepth 1 ! -name "$(basename "${DOTGEN_HASH_FILE}")" -exec rm -rf {} +
 fi
 
 debug_msg "initializing shell configuration for '${CURRENT_SHELL}' from '${SCRIPT_DIR}'..."
