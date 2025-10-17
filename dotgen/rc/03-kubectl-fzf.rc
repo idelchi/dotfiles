@@ -1,164 +1,175 @@
-KUBECTL_FZF_COMPLETION_BIN=${KUBECTL_FZF_COMPLETION_BIN:-kubectl-fzf-completion}
-
-__kubectl_fzf_debug()
-{
-    local file="$KUBECTL_FZF_COMP_DEBUG_FILE"
-    if [[ -n ${file} ]]; then
-        echo "$*" >> "${file}"
-    fi
+__kf_norm_kind() {
+  case "${1:-}" in
+    po|pod|pods)                     echo "pods" ;;
+    deploy|deployment|deployments)   echo "deployments" ;;
+    svc|service|services)            echo "services" ;;
+    *)                               echo "" ;;
+  esac
 }
 
-__kubectl_fzf_get_completions()
-{
-    local cmdArgs requestComp
-    cmdArgs="$1"
-    # TODO Handle query
-    currentWord="$2"
-
-    __kubectl_fzf_debug "Get completions: cmdArgs: '$cmdArgs', currentWord: '$currentWord'"
-    requestComp="$KUBECTL_FZF_COMPLETION_BIN k8s_completion \"$cmdArgs\""
-    __kubectl_fzf_debug "About to call: eval '${requestComp}'"
-    zle -R "Calling completion '${requestComp}'"
-    completionOutput=$(eval "$requestComp")
-    exitCode=$?
-    __kubectl_fzf_debug "completion output: ${completionOutput}, exit code ${exitCode}"
-
-    if [[ $exitCode == 5 ]]; then
-        __kubectl_fzf_debug "No completion available"
-        echo "error: No completion available: $requestComp"
-        return
+__kf_ns_scope_from_lbuf() {
+  local lbuf="$1"
+  if [[ "$lbuf" == *" -A"* || "$lbuf" == *" --all-namespaces"* ]]; then
+    echo "-A"; return
+  fi
+  if [[ "$lbuf" == *"--namespace="* ]]; then
+    printf -- "-n %s" "${lbuf##*--namespace=}" | awk '{print "-n",$1}'
+    return
+  fi
+  local tokens=(${(z)lbuf})
+  for ((i=1; i<=${#tokens[@]}; i++)); do
+    if [[ "${tokens[i]}" == "-n" || "${tokens[i]}" == "--namespace" ]]; then
+      local j=$((i+1))
+      [[ $j -le ${#tokens[@]} ]] && printf -- "-n %s" "${tokens[j]}"
+      return
     fi
-    if [[ $exitCode == 6 ]]; then
-        __kubectl_fzf_debug "Unknown resource type, fallback to default completion"
-        fallback="true"
-        return
-    fi
-    if [[ $exitCode != 0 ]]; then
-        __kubectl_fzf_debug "error on completion"
-        return
-    fi
-    __kubectl_fzf_debug "No error"
+  done
+  echo ""
 }
 
-__kubectl_fzf_kubectl() {
-    local currentWord previousWord
-    local cmdArgs
-    local completionOutput
-    local fallback
+# Strict TAB-separated "NS<TAB>NAME"
+__kf_list() {
+  local kind="$1"; shift
+  local scope="$1"; shift || true
 
-    zle -R "Starting kubectl-fzf completion"
-    __kubectl_fzf_debug "CURRENT: ${CURRENT}, words[*]: '${words[*]}', ${#words[@]}"
-    words=("${=words[1,CURRENT]}")
-    __kubectl_fzf_debug "Truncated words[*]: ${words[*]},"
-    currentWord=${words[CURRENT]}
-    previousWord=${words[CURRENT-1]}
-    __kubectl_fzf_debug "Current word: ${currentWord}, previous word: ${previousWord}"
-
-    # We only have 'kubectl g#', fallback to default completion
-    if [[ ${#words[@]} -le 2 ]]; then
-        zle "${kubectl_fzf_default_completion:-expand-or-complete}"
-        return
-    fi
-
-    cmdArgs="${words[2, -1]}"
-    __kubectl_fzf_get_completions "$cmdArgs" "$currentWord"
-    zle -R "Processing completion output"
-    if [[ "$completionOutput" == "" ]]; then
-        __kubectl_fzf_debug "Empty completion output"
-        return
-    fi
-    if [[ -n "$fallback" ]]; then
-        __kubectl_fzf_debug "Fallback detected: '$fallback'"
-        zle "${kubectl_fzf_default_completion:-expand-or-complete}"
-        return
-    fi
-    if [[ "$completionOutput" == error* ]]; then
-        __kubectl_fzf_debug "Output starts with error, falling back: $completionOutput"
-        zle "${kubectl_fzf_default_completion:-expand-or-complete}"
-        return
-    fi
-
-    __kubectl_fzf_debug "Adding to the LBUFFER: '$completionOutput '"
-    if [[ ${LBUFFER[-1]} != " " ]]; then
-        zle backward-kill-word
-    fi
-    LBUFFER+="$completionOutput "
+  if [[ "$scope" == "-A" ]]; then
+    kubectl get "$kind" -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\n"}{end}' 2>/dev/null
+  else
+    local cns
+    cns=$(kubectl config view --minify -o jsonpath='{..namespace}' 2>/dev/null || true)
+    [[ -z "$cns" ]] && cns=default
+    kubectl get "$kind" ${=scope} -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\n"}{end}' 2>/dev/null \
+    | awk -v ns="$cns" -F'\t' 'BEGIN{OFS="\t"} { if($1=="") $1=ns; print $1,$2 }'
+  fi
 }
 
-# Completion entry point
-kubectl_fzf_completion() {
-    local words firstWord
-    setopt localoptions noshwordsplit noksh_arrays noposixbuiltins
-
-    # Respect FZF_COMPLETION_TRIGGER - only activate if a trailing trigger is present.
-    # Also strip the trailing trigger from LBUFFER so it doesn't leak into the command line.
-    if [[ -n "$FZF_COMPLETION_TRIGGER" ]]; then
-        # If LBUFFER ends with the trigger, remove just that final occurrence.
-        local trimmed="${LBUFFER%$FZF_COMPLETION_TRIGGER}"
-        if [[ "$trimmed" == "$LBUFFER" ]]; then
-            # No trailing trigger -> delegate to default completion.
-            zle "${kubectl_fzf_default_completion:-expand-or-complete}"
-            return
-        fi
-        # Drop the trailing trigger so ',' (or any custom token) isn't passed to kubectl.
-        LBUFFER="$trimmed"
-    fi
-
-    words=(${(z)LBUFFER})
-
-    __kubectl_fzf_debug "\n========= starting completion logic =========="
-    __kubectl_fzf_debug "LBUFFER (after trigger strip if any): '$LBUFFER', words: '${words[*]}', ${#words}"
-
-    firstWord=${words[1]}
-
-    if [[ ${#words[@]} -le 1 && ${LBUFFER[-1]} != " " ]]; then
-        zle "${kubectl_fzf_default_completion:-expand-or-complete}"
-        return
-    fi
-
-    # We only care about kubectl completion
-    if [[ $firstWord != k* ]]; then
-        zle "${kubectl_fzf_default_completion:-expand-or-complete}"
-        return
-    fi
-
-    if [[ $RBUFFER != "" ]]; then
-        # TODO Handle right buffer
-        zle "${kubectl_fzf_default_completion:-expand-or-complete}"
-        return
-    fi
-
-    if [[ "$firstWord" != "kubectl" ]]; then
-        # Try to resolve alias
-        expanded=(${(z)aliases[$firstWord]})
-        if [ ${#expanded} -lt 1 ]; then
-            zle "${kubectl_fzf_default_completion:-expand-or-complete}"
-            return
-        fi
-        if [ "${expanded[1]}" != "kubectl" ]; then
-            zle "${kubectl_fzf_default_completion:-expand-or-complete}"
-            return
-        fi
-        # We have resolved a kubectl alias
-        for word in "${words[@]:1}"; do
-            expanded+=("$word")
-        done
-        words=("${expanded[@]}")
-    fi
-    if [[ ${LBUFFER[-1]} == " " ]]; then
-        words+=(" ")
-    fi
-    CURRENT=${#words[@]}
-    __kubectl_fzf_kubectl
+__kf_preview() {
+  local action="$1" kind="$2"
+  case "$action" in
+    get)
+      cat <<EOF
+bash -c '
+ns=\$1; name=\$2; kind=\$3;
+kubectl get "\$kind" -n "\$ns" "\$name" -o yaml 2>&1
+' preview {1} {2} $kind
+EOF
+      ;;
+    describe)
+      cat <<EOF
+bash -c '
+ns=\$1; name=\$2; kind=\$3;
+kubectl describe "\$kind" -n "\$ns" "\$name"
+' preview {1} {2} $kind
+EOF
+      ;;
+    logs)
+      cat <<'EOF'
+bash -c '
+ns=$1; name=$2;
+kubectl logs -n "$ns" "$name" --all-containers --tail=200 2>&1
+' preview {1} {2}
+EOF
+      ;;
+  esac
 }
 
-# Discover the default widget bound to TAB (Ctrl-I) only once.
-if [[ -z "$kubectl_fzf_default_completion" ]]; then
-    binding=$(bindkey '^I')
-    IFS=" " read -r -A binding_parts <<<"$binding"
-    kubectl_fzf_default_completion=${binding_parts[2]}
-    unset binding binding_parts
-fi
+# Remove resource kind token (3rd token) from a kubectl line
+__kf_strip_kind_token_if_present() {
+  local lbuf="$1" kind="$2"
+  local tokens=(${(z)lbuf})
+  if (( ${#tokens[@]} >= 3 )) && [[ "${tokens[3]}" == (#i)(po|pod|pods|deploy|deployment|deployments|svc|service|services) ]]; then
+    tokens=("${tokens[1]}" "${tokens[2]}" "${(@)tokens[4,-1]}")
+  fi
+  echo "${(j: :)tokens}"
+}
 
-zle -N kubectl_fzf_completion
-bindkey '^I' kubectl_fzf_completion
+_fzf_complete_kubectl() {
+  setopt localoptions noshwordsplit noksh_arrays
+  local lbuf="$1"
+
+  # Strip trigger token (e.g., ",") if present at tail and dangling commas/spaces
+  if [[ -n "$FZF_COMPLETION_TRIGGER" && "$lbuf" == *"$FZF_COMPLETION_TRIGGER" ]]; then
+    lbuf="${lbuf%$FZF_COMPLETION_TRIGGER}"
+  fi
+  lbuf="${lbuf%%+([[:space:],;:])}"
+  LBUFFER="${lbuf% } "
+
+  local tokens=(${(z)LBUFFER})
+  local sub="${tokens[2]:-}"          # get|describe|logs
+  local raw_kind="${tokens[3]:-}"
+  local kind="$(__kf_norm_kind "$raw_kind")"
+
+  # Allow logs/describe to omit kind: default to pods for logs; require known kind for describe/get
+  if [[ "$sub" == "logs" && -z "$kind" ]]; then
+    kind="pods"
+  fi
+  [[ -z "$sub" || "$sub" != (get|describe|logs) ]] && return
+  if [[ "$sub" != "logs" && -z "$kind" ]]; then
+    return
+  fi
+  if [[ "$sub" == "logs" ]]; then
+    # kubectl logs syntax has no kind token; strip it if present
+    local stripped
+    stripped="$(__kf_strip_kind_token_if_present "$LBUFFER" "$kind")"
+    LBUFFER="${stripped% } "
+    lbuf="$LBUFFER"
+    # re-tokenize after strip
+    tokens=(${(z)LBUFFER})
+  fi
+
+  local scope; scope="$(__kf_ns_scope_from_lbuf "$LBUFFER")"
+  local list; list="$(__kf_list "$kind" "$scope")"
+  [[ -z "$list" ]] && return
+
+  local preview; preview="$(__kf_preview "$sub" "$kind")"
+  local selected
+  selected=$(echo "$list" | FZF_DEFAULT_COMMAND='' fzf \
+    --ansi --with-nth=1,2 --delimiter=$'\t' \
+    --header "TAB: insert • ENTER: insert+execute" \
+    --preview "$preview" --preview-window=right:70%:wrap \
+    --expect=enter,tab --multi --height=80% --reverse) || return
+
+  local key; key=$(echo "$selected" | head -1)
+  local rows; rows=$(echo "$selected" | tail -n +2)
+  [[ -z "$rows" ]] && { zle reset-prompt; return; }
+
+  local out=""; local add_container_flag=""
+  if [[ "$sub" == "logs" ]]; then
+    if [[ "$LBUFFER" == *" -c "* || "$LBUFFER" == *"--container="* || "$LBUFFER" == *" --container "* ]]; then
+      add_container_flag=""
+    else
+      add_container_flag=" --all-containers"
+    fi
+  fi
+
+  while IFS=$'\t' read -r ns name; do
+    [[ -z "$ns" || -z "$name" ]] && continue
+    if [[ "$scope" == "-A" ]]; then
+      case "$sub" in
+        get|describe) out+=" -n ${ns} ${name}" ;;
+        logs)         out+=" -n ${ns} ${name}${add_container_flag}" ;;
+      esac
+    else
+      case "$sub" in
+        get|describe) out+=" ${name}" ;;
+        logs)         out+=" ${name}${add_container_flag}" ;;
+      esac
+    fi
+  done <<<"$rows"
+
+  [[ -z "$out" ]] && { zle reset-prompt; return; }
+  LBUFFER+="$out "
+  zle reset-prompt
+  [[ "$key" == "enter" ]] && zle accept-line
+}
+
+_fzf_complete_k()            { _fzf_complete_kubectl "$1"; }
+_fzf_complete_kubectl_post() { awk '{print $0}'; }
+_fzf_complete_k_post()       { _fzf_complete_kubectl_post; }
+_fzf_complete_kgp()          { _fzf_complete_kubectl "kubectl get pods ${LBUFFER#*kubectl get pods }"; }
+_fzf_complete_kgd()          { _fzf_complete_kubectl "kubectl get deployments ${LBUFFER#*kubectl get deployments }"; }
+_fzf_complete_kgs()          { _fzf_complete_kubectl "kubectl get services ${LBUFFER#*kubectl get services }"; }
+_fzf_complete_kdp()          { _fzf_complete_kubectl "kubectl describe pods ${LBUFFER#*kubectl describe pods }"; }
+_fzf_complete_kdl()          { _fzf_complete_kubectl "kubectl describe deployments ${LBUFFER#*kubectl describe deployments }"; }
+_fzf_complete_kds()          { _fzf_complete_kubectl "kubectl describe services ${LBUFFER#*kubectl describe services }"; }
+_fzf_complete_kl()           { _fzf_complete_kubectl "kubectl logs ${LBUFFER#*kubectl logs }"; }  # logs has no kind token

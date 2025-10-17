@@ -77,10 +77,10 @@ commands:
       - zsh
 
   - name: kubectl-fzf
-    doc: A fast kubectl autocompletion with fzf
+    doc: kubectl-fzf shell integration
     kind: run
     cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/03-kubectl-fzf.rc
     export_to: {{ .DOTGEN_SOURCE_DIR }}/07-kubectl-fzf.rc
-    exclude: {{ or (notInPath "fzf") (notInPath "kubectl") (notInPath "kubectl-fzf-completion") }}
+    exclude: {{ or (notInPath "fzf") (notInPath "kubectl") }}
     shell:
       - zsh

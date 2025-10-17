@@ -53,6 +53,10 @@
         gocom --pizzaz --stage --readme --commit --push --yes; \
     }; f"
 
+    a = "!f() { \
+        gocom --stage --readme --commit --push --yes; \
+    }; f"
+
     c = "!f() { \
         echo '--- Adding'; \
         git add .; \
