@@ -92,7 +92,7 @@ commands:
   - name: dirstat-rm
     doc: dirstat fzf integration
     kind: run
-    cmd: sed 's|%%%|{{ which "zsh" }}|g' {{ .DOTGEN_CURRENT_DIR }}/rc/04-dirstat-fzf.rc
+    cmd: sed 's|%%%|{{ which "zsh" }}|g' {{ .DOTGEN_CURRENT_DIR }}/rc/03-dirstat-fzf.rc
     export_to: {{ .DOTGEN_SOURCE_DIR }}/09-dirstat-fzf.rc
     exclude: {{ notInPath "dirstat" }}
     shell:
