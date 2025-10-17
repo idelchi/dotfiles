@@ -57,7 +57,7 @@ commands:
     cmd: |
       # If the script directory doesn't exist, clone the repository
       if [ ! -d "{{ .ZINIT_PLUGINS_DIR }}/thecasualcoder---kube-fzf" ]; then
-        git clone --quiet https://github.com/thecasualcoder/kube-fzf.git {{ .ZINIT_PLUGINS_DIR }}/thecasualcoder---kube-fzf
+        git clone --quiet https://github.com/thecasualcoder/kube-fzf.git "{{ .ZINIT_PLUGINS_DIR }}/thecasualcoder---kube-fzf"
       fi
       # Add the script directory to the PATH
       {{ if eq .SHELL "zsh" -}}
