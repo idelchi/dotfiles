@@ -80,14 +80,14 @@
         echo "--- Adding"; \
         git add .; \
         echo "--- Committing"; \
-        git commit -am \"[skipping ci]${1:-[no description]}\"; \
+        git commit -am \"[skipping ci] ${1:-[no description]}\"; \
         echo "--- Pushing"; \
         git push -o ci.skip; \
     }; f"
 
     cf = "!f() { \
         echo \"$(date)\" > __auto__; \
-        git c \"[forced commit]${1:-[no description]}\"; \
+        git c \"[forced commit] ${1:-[no description]}\"; \
         rm __auto__; \
     }; f"
 
