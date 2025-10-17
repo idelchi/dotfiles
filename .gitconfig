@@ -40,15 +40,6 @@
         git add --renormalize .; \
     }; f"
 
-    co = "!f() { \
-        echo "--- Adding"; \
-        git add .; \
-        echo "--- Committing"; \
-        git commit -am \"${1:-[no description]}\"; \
-        echo "--- Pushing"; \
-        git push; \
-    }; f"
-
     p = "!f() { \
         gocom --pizzaz --stage --readme --commit --push --yes; \
     }; f"
@@ -76,18 +67,27 @@
         git push; \
     }; f"
 
+    co = "!f() { \
+        echo "--- Adding"; \
+        git add .; \
+        echo "--- Committing"; \
+        git commit -am \"${1:-[no description]}\"; \
+        echo "--- Pushing"; \
+        git push; \
+    }; f"
+
     cs = "!f() { \
         echo "--- Adding"; \
         git add .; \
         echo "--- Committing"; \
-        git commit -am \"${1:-[skipping ci]}\"; \
+        git commit -am \"[skipping ci]${1:-[no description]}\"; \
         echo "--- Pushing"; \
         git push -o ci.skip; \
     }; f"
 
     cf = "!f() { \
         echo \"$(date)\" > __auto__; \
-        git c \"${1:-[forced commit]}\"; \
+        git c \"[forced commit]${1:-[no description]}\"; \
         rm __auto__; \
     }; f"
 
