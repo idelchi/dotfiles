@@ -1,5 +1,6 @@
 values:
   DOTGEN_SOURCE_DIR: "{{ .CACHE_DIR }}/dotgen/{{ .SHELL }}/source/completions"
+  ZINIT_PLUGINS_DIR: "{{ .HOME }}/.local/share/zinit/plugins"
 
   # Forces a rerun if any tool is added/removed
   deps:
@@ -52,26 +53,25 @@ commands:
 
   - name: kube-fzf
     doc: Shell commands using kubectl and fzf for command-line fuzzy searching of Kubernetes Pods
-    kind: run
+    kind: raw
     cmd: |
       # If the script directory doesn't exist, clone the repository
-      if [ ! -d "{{ .DOTGEN_SOURCE_DIR }}/.kube-fzf" ]; then
-        git clone https://github.com/thecasualcoder/kube-fzf.git {{ .DOTGEN_SOURCE_DIR }}/.kube-fzf > /dev/null
+      if [ ! -d "{{ .ZINIT_PLUGINS_DIR }}/thecasualcoder---kube-fzf" ]; then
+        git clone --quiet https://github.com/thecasualcoder/kube-fzf.git {{ .ZINIT_PLUGINS_DIR }}/thecasualcoder---kube-fzf
       fi
       # Add the script directory to the PATH
       {{ if eq .SHELL "zsh" -}}
-      echo 'path+=("{{ join .DOTGEN_SOURCE_DIR ".kube-fzf" | posixPath }}")'
+      path+=("{{ join .ZINIT_PLUGINS_DIR "thecasualcoder---kube-fzf" | posixPath }}")
       {{- else -}}
-      echo 'export PATH="{{ join .DOTGEN_SOURCE_DIR ".kube-fzf" | posixPath }}:$PATH"'
+      export PATH="{{ join .ZINIT_PLUGINS_DIR "thecasualcoder---kube-fzf" | posixPath }}:$PATH"
       {{- end }}
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/05-kube-fzf.rc
     exclude: {{ or (notInPath "fzf") (notInPath "kubectl") }}
 
   - name: fzf-docker integration
     doc: fzf-docker shell integration
     kind: run
     cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/02-docker-fzf.rc
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/06-docker-fzf.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/05-docker-fzf.rc
     exclude: {{ or (notInPath "fzf") (notInPath "docker") }}
     shell:
       - zsh
