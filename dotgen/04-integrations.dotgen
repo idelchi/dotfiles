@@ -3,20 +3,24 @@ values:
 
   # Forces a rerun if any tool is added/removed
   deps:
-    starship: "{{ which "starship" | size }}"
-    zoxide: "{{ which "zoxide" | size }}"
-    direnv: "{{ which "direnv" | size }}"
-    gh: "{{ which "gh" | size }}"
-    slot: "{{ which "slot" | size }}"
-    task: "{{ which "task" | size }}"
-    atuin: "{{ which "atuin" | size }}"
-    kubectl: "{{ which "kubectl" | size }}"
-    fzf: "{{ which "fzf" | size }}"
-    code: "{{ which "code" | size }}"
-    dirstat: "{{ which "dirstat" | size }}"
+    # Forces a rerun if any tool is changed
+    tools:
+      starship: "{{ which "starship" | size }}"
+      zoxide: "{{ which "zoxide" | size }}"
+      direnv: "{{ which "direnv" | size }}"
+      gh: "{{ which "gh" | size }}"
+      slot: "{{ which "slot" | size }}"
+      task: "{{ which "task" | size }}"
+      atuin: "{{ which "atuin" | size }}"
+      kubectl: "{{ which "kubectl" | size }}"
+      fzf: "{{ which "fzf" | size }}"
+      code: "{{ which "code" | size }}"
+      dirstat: "{{ which "dirstat" | size }}"
 
-    task.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
-    dirstat-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/04-dirstat-fzf.rc" | size }}"
+    # Forces a rerun if any file is changed
+    files:
+      01-task.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
+      04-dirstat-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/04-dirstat-fzf.rc" | size }}"
 
 ---
 
@@ -84,7 +88,7 @@ commands:
     doc: fzf shell integration
     kind: run
     cmd: |
-      echo "export FZF_COMPLETION_TRIGGER=','"
+      # echo "export FZF_COMPLETION_TRIGGER=','"
       fzf --"{{ .SHELL }}"
     export_to: {{ .DOTGEN_SOURCE_DIR }}/08-fzf.rc
     exclude: {{ notInPath "fzf" }}

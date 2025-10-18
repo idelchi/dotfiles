@@ -34,6 +34,10 @@ else
   fail "Unsupported shell. Only bash and zsh are supported."
 fi
 
+export SHELL="${CURRENT_SHELL}"
+
+export NoDefaultCurrentDirectoryInExePath=true
+
 DOTGEN_DIR="${HOME}/.cache/dotgen/${CURRENT_SHELL}"
 DOTGEN_HASH_FILE="${DOTGEN_DIR}/dotgen.hash"
 DOTGEN_RC_FILE="${DOTGEN_DIR}/dotgen.rc"
@@ -62,8 +66,11 @@ fi
 # Rebuild if necessary
 if [[ "${need_rebuild}" = true ]]; then
   SHELL_DEBUG=true
-  # Delete everything in the cache dir except the hash file
-  find "${DOTGEN_DIR}" -mindepth 1 ! -name "$(basename "${DOTGEN_HASH_FILE}")" -exec rm -rf {} +
+  if [[ -d "${DOTGEN_DIR}" ]]; then
+    # Delete everything in the cache dir except the hash file
+    find "${DOTGEN_DIR}" -mindepth 1 ! -name "$(basename "${DOTGEN_HASH_FILE}")" -exec rm -rf {} +
+
+  fi
 fi
 
 debug_msg "initializing shell configuration for '${CURRENT_SHELL}' from '${SCRIPT_DIR}'..."
@@ -123,3 +130,4 @@ debug_msg "  - took (${src_elapsed_ms} ms)"
 unset SHELL_DEBUG REBUILD_CACHE CURRENT_SHELL SCRIPT_DIR
 unset DOTGEN_ADDITIONAL_ARGS DOTGEN_DIR DOTGEN_HASH_FILE DOTGEN_RC_FILE DOTGEN_INSTRUMENT
 unset new_hash_file tmp_rc_file start_ns end_ns elapsed_ms src_start_ns src_end_ns src_elapsed_ms need_rebuild due_to
+unset NoDefaultCurrentDirectoryInExePath

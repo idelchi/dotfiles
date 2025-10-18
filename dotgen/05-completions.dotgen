@@ -67,8 +67,8 @@ commands:
       {{- end }}
     exclude: {{ or (notInPath "fzf") (notInPath "kubectl") }}
 
-  - name: fzf-docker integration
-    doc: fzf-docker shell integration
+  - name: fzf-docker shorcuts
+    doc: fzf-docker shortcuts
     kind: run
     cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/02-docker-fzf.rc
     export_to: {{ .DOTGEN_SOURCE_DIR }}/05-docker-fzf.rc

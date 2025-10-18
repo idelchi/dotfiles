@@ -2,7 +2,7 @@ env:
   {{ if inPath "rip" }}
   RIP_GRAVEYARD: "{{ .HOME }}/.local/share/trash"
   {{ end }}
-  {{ if inPath "direnv" }}
+  {{ if and (inPath "direnv") (inPath "bash") }}
   DIRENV_BASH: "{{ which "bash" }}"
   {{ end }}
 
@@ -11,7 +11,7 @@ commands:
     doc: git pull
     cmd: git pull
 
-  - name: grh
+  - name: grhd
     doc: git reset hard to dev branch
     cmd: git reset --hard origin/dev
 
@@ -57,11 +57,11 @@ commands:
     cmd: rip --decompose && rm -rf "${RIP_GRAVEYARD}"
     exclude: {{ notInPath "rip" }}
 
-  - name: ownership
+  - name: owner
     doc: List files with their ownership
     kind: function
     cmd: |
-      find ${1-.} -type f -exec ls -al {} \;
+      find ${1-.} -type f -exec stat -c '%A %U %G %n' {} \;
 
   - name: epx
     doc: Execute command within envprof profile

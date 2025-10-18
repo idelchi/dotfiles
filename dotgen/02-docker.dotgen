@@ -1,9 +1,18 @@
 exclude: {{ and (notInPath "docker") (notInPath "podman") }}
+
 ---
+
 commands:
   - name: container
     doc: alias container to docker or podman
-    cmd: {{ if inPath "docker" }}docker{{ else if inPath "podman" }}podman{{ else }}echo "No container runtime found"{{ end }}
+    cmd: >-
+      {{- if inPath "docker" }}
+      docker
+      {{- else if inPath "podman" }}
+      podman
+      {{- else }}
+      echo "No container runtime found"
+      {{- end }}
     exclude: {{ inPath "container" }}
 
   - name: cs

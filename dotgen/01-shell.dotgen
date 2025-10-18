@@ -1,17 +1,19 @@
 values:
   DOTGEN_SOURCE_DIR: "{{ .CACHE_DIR }}/dotgen/{{ .SHELL }}/source/rc"
 
-  # Forces a rerun if any tool is added/removed
   deps:
-    zsh.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/00-zsh.rc" | size }}"
+    # Forces a rerun if any file is changed
+    files:
+      00-zsh.rc: "{{ join .DOTGEN_CURRENT_DIR "rc/00-zsh.rc" | size }}"
 
 ---
 
 commands:
   - name: zsh
     doc: zshrc
-    kind: run
+    kind: raw
     shell:
       - zsh
-    cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/00-zsh.rc
-    export_to: "{{ .DOTGEN_SOURCE_DIR }}/00-zsh.rc"
+    cmd: |
+      {{- copy (join .DOTGEN_CURRENT_DIR "rc/00-zsh.rc") (join .DOTGEN_SOURCE_DIR "00-zsh.rc") }}
+      . "{{ .DOTGEN_SOURCE_DIR }}/00-zsh.rc"

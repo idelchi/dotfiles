@@ -1,7 +1,8 @@
 values:
-  # Forces a rerun if any tool is added/removed
   deps:
-    dotgen: "{{ which "dotgen" | size }}"
+    # Forces a rerun if any tool is changed
+    tools:
+      dotgen: "{{ which "dotgen" | size }}"
 
 ---
 
@@ -9,4 +10,6 @@ vars:
   OS: "{{ .OS }}"
   ARCH: "{{ .ARCHITECTURE }}"
   PLATFORM: "{{ .PLATFORM }}"
-  SHELL: "{{ which .SHELL }}"
+
+env:
+  SHELL: "{{ .SHELL }}"
