@@ -48,7 +48,7 @@ due_to=""
 
 # Compute new hash
 new_hash_file="$(mktemp)"
-dotgen "${SCRIPT_DIR}/dotgen/" ${DOTGEN_ADDITIONAL_ARGS} --shell "${CURRENT_SHELL}" --hash > "${new_hash_file}" || return 1
+dotgen "${SCRIPT_DIR}/dotgen" ${DOTGEN_ADDITIONAL_ARGS} --shell "${CURRENT_SHELL}" --hash > "${new_hash_file}" || return 1
 
 if [[ "${REBUILD_CACHE:-}" = "true" ]]; then
   need_rebuild=true
@@ -97,7 +97,7 @@ if [[ "${need_rebuild}" = true ]]; then
   start_ns="$(date +%s%N 2>/dev/null || echo 0)"
 
   dotgen ${SHELL_DEBUG:+--verbose} ${DOTGEN_INSTRUMENT:+-I} \
-    "${SCRIPT_DIR}/dotgen/" ${DOTGEN_ADDITIONAL_ARGS} \
+    "${SCRIPT_DIR}/dotgen" ${DOTGEN_ADDITIONAL_ARGS} \
     --shell "${CURRENT_SHELL}" > "${tmp_rc_file}" || return 1
 
   end_ns="$(date +%s%N 2>/dev/null || echo 0)"

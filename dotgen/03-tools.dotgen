@@ -19,6 +19,10 @@ commands:
     doc: git reset hard to main branch
     cmd: git reset --hard origin/main
 
+  - name: gs
+    doc: git status
+    cmd: git status
+
   - name: n
     doc: nano text editor
     cmd: nano
