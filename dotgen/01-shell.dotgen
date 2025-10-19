@@ -11,9 +11,8 @@ values:
 commands:
   - name: zsh
     doc: zshrc
-    kind: raw
+    kind: run
+    cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/00-zsh.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/00-zsh.rc
     shell:
       - zsh
-    cmd: |
-      {{- copy (join .DOTGEN_CURRENT_DIR "rc/00-zsh.rc") (join .DOTGEN_SOURCE_DIR "00-zsh.rc") }}
-      . "{{ .DOTGEN_SOURCE_DIR }}/00-zsh.rc"
