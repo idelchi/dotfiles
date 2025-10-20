@@ -63,6 +63,14 @@ commands:
     doc: container compose stop
     cmd: container compose stop
 
+  - name: dil
+    doc: container image list
+    cmd: container images --format "{{.Repository}}:{{.Tag}}"
+
+  - name: dcl
+    doc: container container list
+    cmd: container ps -a --format "{{.Names}}"
+
   - name: dri
     doc: container image rm
     cmd: container rmi -f
