@@ -33,6 +33,36 @@ commands:
     cmd: micro
     exclude: {{ notInPath "micro" }}
 
+  - name: lazy
+    doc: lazydocker
+    cmd: lazydocker
+    exclude: {{ notInPath "lazydocker" }}
+
+  - name: lg
+    doc: lazygit
+    cmd: lazygit
+    exclude: {{ notInPath "lazygit" }}
+
+  - name: kbx
+    doc: kubectx
+    cmd: kubectx
+    exclude: {{ notInPath "kubectx" }}
+
+  - name: bkn
+    doc: kubens
+    cmd: kubens
+    exclude: {{ notInPath "kubens" }}
+
+  - name: kc
+    doc: kubectl
+    cmd: kubectl
+    exclude: {{ notInPath "kubectl" }}
+
+  - name: tf
+    doc: terraform
+    cmd: terraform
+    exclude: {{ notInPath "terraform" }}
+
   - name: md
     doc: create and enter a new directory
     kind: function

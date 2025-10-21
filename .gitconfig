@@ -48,6 +48,10 @@
         gocom --stage --readme --commit --push --yes; \
     }; f"
 
+    an = "!f() { \
+        gocom --stage --readme --commit --push; \
+    }; f"
+
     c = "!f() { \
         echo '--- Adding'; \
         git add .; \
