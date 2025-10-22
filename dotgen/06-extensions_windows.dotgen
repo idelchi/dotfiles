@@ -88,15 +88,15 @@ commands:
 
   - name: coder
     doc: run code container
-    cmd: container compose -f {{ env "DOTAI" }}/compose.yaml run --remove-orphans --rm code
+    cmd: container compose -f ${DOTAI}/compose.yaml run --remove-orphans --rm code
 
   - name: coderbr
     doc: build code container
-    cmd: container compose -f {{ env "DOTAI" }}/compose.yaml run --build --remove-orphans --rm code
+    cmd: container compose -f ${DOTAI}/compose.yaml run --build --remove-orphans --rm code
 
-  - name: coderb
+  - name: coderrb
     doc: rebuild code container
-    cmd: container compose -f {{ env "DOTAI" }}/compose.yaml build --build-arg CACHE_BUST=$(date +%s) code
+    cmd: container compose -f ${DOTAI}/compose.yaml build --no-cache code
 
   - name: gg
     doc: open git-gui
