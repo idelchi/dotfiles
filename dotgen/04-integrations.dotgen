@@ -20,7 +20,7 @@ values:
     # Forces a rerun if any file is changed
     files:
       01-task.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
-      04-dirstat-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/04-dirstat-fzf.rc" | size }}"
+      03-dirstat-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/03-dirstat-fzf.rc" | size }}"
 
 ---
 
