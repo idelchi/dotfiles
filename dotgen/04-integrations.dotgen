@@ -15,7 +15,6 @@ values:
       kubectl: "{{ which "kubectl" | size }}"
       fzf: "{{ which "fzf" | size }}"
       code: "{{ which "code" | size }}"
-      dirstat: "{{ which "dirstat" | size }}"
 
     # Forces a rerun if any file is changed
     files:
