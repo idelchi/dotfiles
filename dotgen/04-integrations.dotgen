@@ -19,7 +19,6 @@ values:
     # Forces a rerun if any file is changed
     files:
       01-task.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
-      03-dirstat-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/03-dirstat-fzf.rc" | size }}"
 
 ---
 
@@ -95,7 +94,7 @@ commands:
   - name: dirstat-rm
     doc: dirstat fzf integration
     kind: run
-    cmd: sed 's|%%%|{{ which "zsh" }}|g' {{ .DOTGEN_CURRENT_DIR }}/rc/03-dirstat-fzf.rc
+    cmd: dirstat --init
     export_to: {{ .DOTGEN_SOURCE_DIR }}/09-dirstat-fzf.rc
     exclude: {{ notInPath "dirstat" }}
     shell:

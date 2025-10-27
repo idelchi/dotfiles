@@ -23,6 +23,10 @@ commands:
     doc: container compose run
     cmd: container compose run --remove-orphans --rm
 
+  - name: dcre
+    doc: container compose run
+    cmd: container compose run --remove-orphans --rm --entrypoint=
+
   - name: dcrb
     doc: container compose run with build
     cmd: container compose run --build --remove-orphans --rm
