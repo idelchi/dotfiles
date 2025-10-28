@@ -75,3 +75,10 @@ commands:
     exclude: {{ or (notInPath "fzf") (notInPath "docker") }}
     shell:
       - zsh
+
+  - name: godyl
+    doc: godyl completions
+    kind: run
+    cmd: godyl completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/06-godyl.rc
+    exclude: {{ notInPath "godyl" }}
