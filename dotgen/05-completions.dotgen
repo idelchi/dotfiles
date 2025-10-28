@@ -82,3 +82,24 @@ commands:
     cmd: godyl completion "{{ .SHELL }}"
     export_to: {{ .DOTGEN_SOURCE_DIR }}/06-godyl.rc
     exclude: {{ notInPath "godyl" }}
+
+  - name: aggr
+    doc: aggr completions
+    kind: run
+    cmd: aggr --shell-completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/07-aggr.rc
+    exclude: {{ notInPath "aggr" }}
+
+  - name: envprof
+    doc: envprof completions
+    kind: run
+    cmd: envprof completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/08-envprof.rc
+    exclude: {{ notInPath "envprof" }}
+
+  - name: slot
+    doc: slot completions
+    kind: run
+    cmd: slot completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/09-slot.rc
+    exclude: {{ notInPath "slot" }}
