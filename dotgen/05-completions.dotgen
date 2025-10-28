@@ -103,3 +103,10 @@ commands:
     cmd: slot completion "{{ .SHELL }}"
     export_to: {{ .DOTGEN_SOURCE_DIR }}/09-slot.rc
     exclude: {{ notInPath "slot" }}
+
+  - name: dotgen
+    doc: dotgen completions
+    kind: run
+    cmd: dotgen completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/10-dotgen.rc
+    exclude: {{ notInPath "dotgen" }}
