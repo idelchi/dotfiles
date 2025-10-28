@@ -110,3 +110,10 @@ commands:
     cmd: dotgen completion "{{ .SHELL }}"
     export_to: {{ .DOTGEN_SOURCE_DIR }}/10-dotgen.rc
     exclude: {{ notInPath "dotgen" }}
+
+  - name: dirstat
+    doc: dirstat completions
+    kind: run
+    cmd: dirstat --shell-completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/11-dirstat.rc
+    exclude: {{ notInPath "dirstat" }}
