@@ -99,6 +99,10 @@ commands:
     doc: container prune
     cmd: container container prune --force
 
+  - name: dnp
+    doc: container network prune
+    cmd: container network prune --force
+
   - name: debian
     doc: run debian trixie
     cmd: container run -it --rm debian:trixie bash
