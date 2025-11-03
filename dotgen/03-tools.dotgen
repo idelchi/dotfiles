@@ -118,3 +118,8 @@ commands:
         echo "${output}" >&2
       fi
     exclude: {{ notInPath "envprof" }}
+
+  - name: ds
+    doc: dirstat
+    cmd: dirstat
+    exclude: {{ notInPath "dirstat" }}

@@ -2,8 +2,9 @@ values:
   DOTGEN_SOURCE_DIR: "{{ .CACHE_DIR }}/dotgen/{{ .SHELL }}/source/completions"
   ZINIT_PLUGINS_DIR: "{{ .HOME }}/.local/share/zinit/plugins"
 
-  # Forces a rerun if any tool is added/removed
+  # Force rerun if dependencies change
   deps:
+    # Force rerun if any tool is changed
     tools:
       task: "{{ which "task" | size }}"
       docker: "{{ which "docker" | size }}"
@@ -17,6 +18,7 @@ values:
       slot: "{{ which "slot" | size }}"
       dotgen: "{{ which "dotgen" | size }}"
       dirstat: "{{ which "dirstat" | size }}"
+    # Force rerun if any file is changed
     files:
       docker-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/02-docker-fzf.rc" | size }}"
       kubectl-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/03-kubectl-fzf.rc" | size }}"
