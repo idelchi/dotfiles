@@ -94,7 +94,7 @@ commands:
     kind: run
     cmd: sed 's/<< CONTAINER >>/podman/g' {{ .DOTGEN_CURRENT_DIR }}/rc/02-container-fzf.rc
     export_to: {{ .DOTGEN_SOURCE_DIR }}/06-podman-fzf.rc
-    exclude: {{ or (notInPath "fzf") (notInPath "podman") }}
+    exclude: {{ not (and (inPath "fzf") (inPath "podman") (notInPath "docker")) }}
     shell:
       - zsh
 
