@@ -79,20 +79,21 @@ commands:
       {{- end }}
     exclude: {{ or (notInPath "fzf") (notInPath "kubectl") }}
 
-  - name: fzf-docker shorcuts
+
+  - name: fzf-docker shortcuts
     doc: fzf-docker shortcuts
     kind: run
-    cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/02-docker-fzf.rc
+    cmd: sed 's/<< CONTAINER >>/docker/g' {{ .DOTGEN_CURRENT_DIR }}/rc/02-container-fzf.rc
     export_to: {{ .DOTGEN_SOURCE_DIR }}/05-docker-fzf.rc
     exclude: {{ or (notInPath "fzf") (notInPath "docker") }}
     shell:
       - zsh
 
-  - name: fzf-podman shorcuts
+  - name: fzf-podman shortcuts
     doc: fzf-podman shortcuts
     kind: run
-    cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/03-podman-fzf.rc
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/05-podman-fzf.rc
+    cmd: sed 's/<< CONTAINER >>/podman/g' {{ .DOTGEN_CURRENT_DIR }}/rc/02-container-fzf.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/06-podman-fzf.rc
     exclude: {{ or (notInPath "fzf") (notInPath "podman") }}
     shell:
       - zsh
@@ -101,47 +102,47 @@ commands:
     doc: godyl completions
     kind: run
     cmd: godyl completion "{{ .SHELL }}"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/06-godyl.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/07-godyl.rc
     exclude: {{ notInPath "godyl" }}
 
   - name: aggr
     doc: aggr completions
     kind: run
     cmd: aggr --shell-completion "{{ .SHELL }}"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/07-aggr.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/08-aggr.rc
     exclude: {{ notInPath "aggr" }}
 
   - name: envprof
     doc: envprof completions
     kind: run
     cmd: envprof completion "{{ .SHELL }}"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/08-envprof.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/09-envprof.rc
     exclude: {{ notInPath "envprof" }}
 
   - name: slot
     doc: slot completions
     kind: run
     cmd: slot completion "{{ .SHELL }}"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/09-slot.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/10-slot.rc
     exclude: {{ notInPath "slot" }}
 
   - name: dotgen
     doc: dotgen completions
     kind: run
     cmd: dotgen completion "{{ .SHELL }}"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/10-dotgen.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/11-dotgen.rc
     exclude: {{ notInPath "dotgen" }}
 
   - name: dirstat
     doc: dirstat completions
     kind: run
     cmd: dirstat --shell-completion "{{ .SHELL }}"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/11-dirstat.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/12-dirstat.rc
     exclude: {{ notInPath "dirstat" }}
 
   - name: podman completion
     doc: podman completion
     kind: run
     cmd: podman completion "{{ .SHELL }}"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/12-podman.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/13-podman.rc
     exclude: {{ notInPath "podman" }}
