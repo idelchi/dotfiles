@@ -48,7 +48,7 @@ commands:
     doc: gh copilot shell integration
     kind: run
     cmd: |
-      gh copilot >/dev/null 2>&1 && gh copilot alias -- {{ .SHELL }}
+      gh copilot >/dev/null 2>&1 && gh copilotx alias -- {{ .SHELL }} || echo "#skipped gh copilot integration"
     export_to: {{ .DOTGEN_SOURCE_DIR }}/03-gh-copilot.rc
     exclude: {{ notInPath "gh" }}
 

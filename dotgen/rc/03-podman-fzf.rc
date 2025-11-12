@@ -1,0 +1,127 @@
+1FZF_DOCKER_IMAGES_FORMAT="table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}"
+FZF_DOCKER_PS_FORMAT="table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}"
+FZF_DOCKER_RUN_FORMAT="table {{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.ID}}\t{{.CreatedSince}}"
+
+_fzf_complete_podman_post() {
+  awk '{print $1}'
+}
+
+# Alias completions
+_fzf_complete_dri() {
+  local lbuf=$1
+
+  local images_output=$(podman images --format "${FZF_DOCKER_IMAGES_FORMAT}")
+  local selected=$(echo "$images_output" | fzf --multi --header-lines=1 --expect=enter)
+
+  if [[ -n "$selected" ]]; then
+    local key=$(echo "$selected" | head -1)
+    local result=$(echo "$selected" | tail -n +2 | awk '{print $1}' | tr '\n' ' ')
+    LBUFFER="dri ${result}"
+    zle reset-prompt
+    [[ "$key" == "enter" ]] && zle accept-line
+  fi
+}
+
+_fzf_complete_drc() {
+  local lbuf=$1
+
+  local containers_output=$(podman ps -a --format "${FZF_DOCKER_PS_FORMAT}")
+  local selected=$(echo "$containers_output" | fzf --multi --header-lines=1 --expect=enter)
+
+  if [[ -n "$selected" ]]; then
+    local key=$(echo "$selected" | head -1)
+    local result=$(echo "$selected" | tail -n +2 | awk '{print $1}' | tr '\n' ' ')
+    LBUFFER="drc ${result}"
+    zle reset-prompt
+    [[ "$key" == "enter" ]] && zle accept-line
+  fi
+}
+
+_fzf_complete_dr() {
+  local lbuf=$1
+
+  local images_output=$(podman images --format "${FZF_DOCKER_RUN_FORMAT}")
+  local selected=$(echo "$images_output" | fzf --header-lines=1 --expect=enter,tab)
+
+  if [[ -n "$selected" ]]; then
+    local key=$(echo "$selected" | head -1)
+    local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+    if [[ "$key" == "enter" ]]; then
+      LBUFFER="dra ${result} "
+    else
+      LBUFFER="dr ${result} "
+    fi
+    zle reset-prompt
+    [[ "$key" == "enter" ]] && zle accept-line
+  fi
+}
+
+_fzf_complete_de() {
+  local lbuf=$1
+
+  local containers_output=$(podman ps --format "${FZF_DOCKER_PS_FORMAT}")
+  local selected=$(echo "$containers_output" | fzf --header-lines=1 --expect=enter,tab)
+
+  if [[ -n "$selected" ]]; then
+    local key=$(echo "$selected" | head -1)
+    local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+    if [[ "$key" == "enter" ]]; then
+      LBUFFER="dea ${result} "
+    else
+      LBUFFER="de ${result} "
+    fi
+    zle reset-prompt
+    [[ "$key" == "enter" ]] && zle accept-line
+  fi
+}
+
+_fzf_complete_dl() {
+  local lbuf=$1
+
+  local containers_output=$(podman ps -a --format "${FZF_DOCKER_PS_FORMAT}")
+  local selected=$(echo "$containers_output" | fzf --header-lines=1 \
+    --header 'TAB: insert | ENTER: insert+execute | CTRL-O: open in editor | CTRL-/: resize' \
+    --bind 'ctrl-/:change-preview-window(80%,border-bottom|)' \
+    --bind "ctrl-o:execute:podman logs {1} | sed 's/\x1b\[[0-9;]*m//g' | cat | ${EDITOR:-vim} -" \
+    --preview-window up:follow \
+    --preview 'podman logs --follow --tail=100 {1}' \
+    --expect=enter,tab)
+
+  if [[ -n "$selected" ]]; then
+    local key=$(echo "$selected" | head -1)
+    local result=$(echo "$selected" | tail -n +2 | awk '{print $1}')
+    LBUFFER="dl ${result} "
+    zle reset-prompt
+    [[ "$key" == "enter" ]] && zle accept-line
+  fi
+}
+
+_fzf_complete_dri_post() { _fzf_complete_podman_post }
+_fzf_complete_drc_post() { _fzf_complete_podman_post }
+_fzf_complete_dr_post() { _fzf_complete_podman_post }
+_fzf_complete_de_post() { _fzf_complete_podman_post }
+_fzf_complete_dl_post() { _fzf_complete_podman_post }
+
+typeset -Ag _fzf_podman_map=(
+  dr     _fzf_complete_dr
+  de     _fzf_complete_de
+  dl     _fzf_complete_dl
+  dri    _fzf_complete_dri
+  drc    _fzf_complete_drc
+)
+
+smart-podman-tab() {
+  emulate -L zsh -o extended_glob
+  local lbuf=$LBUFFER
+  local -a toks; toks=(${(z)lbuf})
+  local cmd=${toks[1]-}
+
+  if [[ -n ${_fzf_podman_map[$cmd]} ]]; then
+    ${_fzf_podman_map[$cmd]} "$lbuf"
+  else
+    zle fzf-tab-complete
+  fi
+}
+zle -N smart-podman-tab
+
+bindkey '^I' smart-podman-tab

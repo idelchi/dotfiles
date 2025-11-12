@@ -18,6 +18,7 @@ values:
       slot: "{{ which "slot" | size }}"
       dotgen: "{{ which "dotgen" | size }}"
       dirstat: "{{ which "dirstat" | size }}"
+      podman: "{{ which "podman" | size }}"
     # Force rerun if any file is changed
     files:
       docker-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/02-docker-fzf.rc" | size }}"
@@ -86,6 +87,15 @@ commands:
     shell:
       - zsh
 
+  - name: fzf-podman shorcuts
+    doc: fzf-podman shortcuts
+    kind: run
+    cmd: cat {{ .DOTGEN_CURRENT_DIR }}/rc/03-podman-fzf.rc
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/05-podman-fzf.rc
+    exclude: {{ or (notInPath "fzf") (notInPath "podman") }}
+    shell:
+      - zsh
+
   - name: godyl
     doc: godyl completions
     kind: run
@@ -127,3 +137,10 @@ commands:
     cmd: dirstat --shell-completion "{{ .SHELL }}"
     export_to: {{ .DOTGEN_SOURCE_DIR }}/11-dirstat.rc
     exclude: {{ notInPath "dirstat" }}
+
+  - name: podman completion
+    doc: podman completion
+    kind: run
+    cmd: podman completion "{{ .SHELL }}"
+    export_to: {{ .DOTGEN_SOURCE_DIR }}/12-podman.rc
+    exclude: {{ notInPath "podman" }}
