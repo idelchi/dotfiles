@@ -1,4 +1,4 @@
-1FZF_DOCKER_IMAGES_FORMAT="table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}"
+FZF_DOCKER_IMAGES_FORMAT="table {{.ID}}\t{{.Repository}}\t{{.Tag}}\t{{.Size}}"
 FZF_DOCKER_PS_FORMAT="table {{.ID}}\t{{.Names}}\t{{.Image}}\t{{.Ports}}"
 FZF_DOCKER_RUN_FORMAT="table {{.Repository}}:{{.Tag}}\t{{.Size}}\t{{.ID}}\t{{.CreatedSince}}"
 
