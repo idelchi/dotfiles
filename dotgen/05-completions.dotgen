@@ -22,6 +22,7 @@ values:
     # Force rerun if any file is changed
     files:
       docker-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/02-docker-fzf.rc" | size }}"
+      podman-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/03-podman-fzf.rc" | size }}"
       kubectl-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/03-kubectl-fzf.rc" | size }}"
 
 ---
