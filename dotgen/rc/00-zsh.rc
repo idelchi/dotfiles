@@ -80,6 +80,8 @@ ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20              # Limit suggestion size
 
 # Allow "#" in shell
 setopt interactive_comments
+# Ignore history entries starting with space
+setopt HIST_IGNORE_SPACE
 
 # Key bindings
 bindkey "^[[2~" overwrite-mode      	# Insert
