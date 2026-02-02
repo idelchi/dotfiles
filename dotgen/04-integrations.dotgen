@@ -44,14 +44,6 @@ commands:
     export_to: {{ .DOTGEN_SOURCE_DIR }}/02-direnv.rc
     exclude: {{ notInPath "direnv" }}
 
-  - name: gh copilot integration
-    doc: gh copilot shell integration
-    kind: run
-    cmd: |
-      gh copilot >/dev/null 2>&1 && gh copilotx alias -- {{ .SHELL }} || echo "#skipped gh copilot integration"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/03-gh-copilot.rc
-    exclude: {{ notInPath "gh" }}
-
   - name: slot integration
     doc: slot shell integration
     kind: run

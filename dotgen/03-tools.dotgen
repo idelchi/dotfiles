@@ -123,3 +123,11 @@ commands:
     doc: dirstat
     cmd: dirstat
     exclude: {{ notInPath "dirstat" }}
+
+  - name: gupdate
+    doc: Update all dependencies in go.mod
+    kind: function
+    cmd: |
+      # skip if go.mod does not exist
+      [ -f go.mod ] || { echo "go.mod not found"; return 1; }
+      awk '/^require \($/,/^\)$/ { if ($1 ~ /\./ && !/\/\/ indirect/) print $1 }' go.mod | xargs -I{} go get -u {}
