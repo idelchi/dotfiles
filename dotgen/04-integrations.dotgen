@@ -14,7 +14,6 @@ values:
       atuin: "{{ which "atuin" | size }}"
       kubectl: "{{ which "kubectl" | size }}"
       fzf: "{{ which "fzf" | size }}"
-      code: "{{ which "code" | size }}"
 
     # Force rerun if any file is changed
     files:
@@ -92,15 +91,4 @@ commands:
     shell:
       - zsh
 
-{{ if false }}
-# Disabled since it messed with atuin
-  - name: vscode integration
-    doc: vscode shell integration
-    kind: run
-    cmd: |
-      vscode_path="$(code --locate-shell-integration-path "{{ .SHELL }}" | tr '\\' '/')"
-      cat "${vscode_path}"
-    export_to: {{ .DOTGEN_SOURCE_DIR }}/00-vscode.rc
-    exclude: {{ notInPath "code" }}
-{{ end }}
 

@@ -1,0 +1,28 @@
+commands:
+  - name: clip
+    doc: copy to clipboard
+    kind: function
+    cmd: printf "\e]52;c;%s\a" "$(base64 -w 0)"
+
+  - name: port
+    doc: Check if a port is in use
+    kind: function
+    cmd: |
+      if [ -z "$1" ]; then
+        echo "Usage: port <number>"
+        return 1
+      fi
+      echo > /dev/tcp/host/${1} && echo "${1} open" || echo "${1} closed"
+
+  - name: port-until
+    doc: Wait until a port is open
+    kind: function
+    cmd: |
+      if [ -z "$1" ]; then
+        echo "Usage: port-until <number>"
+        return 1
+      fi
+      until echo > /dev/tcp/localhost/${1}; do
+        echo "waiting for port ${1}..."
+        sleep 2
+      done
