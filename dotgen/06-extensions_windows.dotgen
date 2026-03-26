@@ -86,9 +86,27 @@ commands:
       docker context use default
       docker buildx use default
 
-  - name: coder
+  - name: coder1
     doc: run code container
     cmd: container compose -f ${DOTAI}/compose.yaml run --remove-orphans --rm code
+
+  - name: coder2
+    doc: run code container
+    cmd: CLAUDE_CODE_DIR=.claude2 container compose -f ${DOTAI}/compose.yaml run --remove-orphans --rm code
+
+  - name: coderd
+    doc: run code container
+    cmd: |
+      # Get the basename of the current dir
+      current_dir=$(basename "$(pwd)")
+      CODER_DIR=${current_dir} container compose -f ${DOTAI}/compose.yaml run --remove-orphans --rm code
+
+  - name: coderd2
+    doc: run code container
+    cmd: |
+      # Get the basename of the current dir
+      current_dir=$(basename "$(pwd)")
+      CLAUDE_CODE_DIR=.claude2 CODER_DIR=${current_dir} container compose -f ${DOTAI}/compose.yaml run --remove-orphans --rm code
 
   - name: coderbr
     doc: build code container
