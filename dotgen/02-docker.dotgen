@@ -133,7 +133,7 @@ commands:
         echo "Usage: dex <container> [command]"
         return 1
       fi
-      if container ps -aq -f name="${1}" | grep -q .; then
+      if container ps -aq -f name="^${1}$" | grep -q .; then
         echo "${1} exists"
 
         return 0
