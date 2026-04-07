@@ -86,13 +86,9 @@ commands:
       docker context use default
       docker buildx use default
 
-  - name: coder1
+  - name: coderw
     doc: run code container
     cmd: container compose -f ${DOTAI}/compose.yaml run --remove-orphans --rm code
-
-  - name: coder2
-    doc: run code container
-    cmd: CLAUDE_CODE_DIR=.claude2 container compose -f ${DOTAI}/compose.yaml run --remove-orphans --rm code
 
   - name: coderd
     doc: run code container

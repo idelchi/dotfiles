@@ -95,6 +95,10 @@ commands:
     doc: container run, override entrypoint
     cmd: container run -it --rm --entrypoint=
 
+  - name: drv
+    doc: container run, override entrypoint, mount volume to /work
+    cmd: container run -it --rm --entrypoint= -v .:/work
+
   - name: dp
     doc: container prune
     cmd: container container prune --force
