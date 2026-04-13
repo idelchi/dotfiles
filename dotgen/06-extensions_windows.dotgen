@@ -106,7 +106,10 @@ commands:
 
   - name: coderbr
     doc: build code container
-    cmd: container compose -f ${DOTAI}/compose.yaml run --build --remove-orphans --rm code
+    cmd: |
+      # Get the basename of the current dir
+      current_dir=$(basename "$(pwd)")
+      CODER_DIR=${current_dir} container compose -f ${DOTAI}/compose.yaml run --build --remove-orphans --rm code
 
   - name: coderrb
     doc: rebuild code container
