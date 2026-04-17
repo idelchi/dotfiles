@@ -10,8 +10,8 @@ commands:
 
   - name: godyla
     doc: install all tools from godyl dump
-    cmd: godyl dump tools | godyl i --strategy sync - --output={{ mustEnv "GODYL_OUTPUT_DIR" }}
+    cmd: godyl dump tools -e | godyl i --strategy sync - --output={{ mustEnv "GODYL_OUTPUT_DIR" }}
 
   - name: godyli
     doc: install all idelchi tools from godyl dump
-    cmd: godyl dump tools | godyl i --tags "idelchi/*" --pre - --output={{ mustEnv "GODYL_OUTPUT_DIR" }}
+    cmd: godyl dump tools -e | godyl i --tags "idelchi/*" --pre - --output={{ mustEnv "GODYL_OUTPUT_DIR" }}
