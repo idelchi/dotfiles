@@ -1,0 +1,47 @@
+commands:
+  - name: coderw
+    doc: run code container
+    cmd: container compose -f {{ mustEnv "DOTAI" }}/compose.yaml run --remove-orphans --rm code
+
+  - name: coderd
+    doc: run code container
+    cmd: |
+      # Get the basename of the current dir
+      current_dir=$(basename "$(pwd)")
+      CODER_DIR=${current_dir} container compose -f {{ mustEnv "DOTAI" }}/compose.yaml run --remove-orphans --rm code
+
+  - name: coderk8s
+    doc: run code container
+    cmd: |
+      # Get the basename of the current dir
+      current_dir=$(basename "$(pwd)")
+      CODER_DIR=${current_dir} container compose -f {{ mustEnv "DOTAI" }}/compose.yaml run --remove-orphans --rm code-k8s
+
+  - name: coderbr
+    doc: build code container
+    cmd: |
+      # Get the basename of the current dir
+      current_dir=$(basename "$(pwd)")
+      CODER_DIR=${current_dir} container compose -f {{ mustEnv "DOTAI" }}/compose.yaml run --build --remove-orphans --rm code
+
+  - name: coderrb
+    doc: rebuild code container
+    cmd: container compose -f {{ mustEnv "DOTAI" }}/compose.yaml build --no-cache code
+
+  - name: repeatx
+    doc: repeat a command multiple times
+    kind: function
+    cmd: |
+      if [ -z "${1}" ]; then
+        echo "Usage: repeatx <command> [count]"
+        return 1
+      fi
+
+      command=${1}
+      count=${2:-10}
+
+      echo "repeating command '${command}' ${count} times:"
+
+      for i in $(seq 1 "${count}"); do
+        eval "${command}"
+      done
