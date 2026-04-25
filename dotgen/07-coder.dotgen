@@ -1,32 +1,46 @@
 commands:
   - name: coderw
     doc: run code container
-    cmd: container compose -f {{ mustEnv "DOTAI" }}/compose.yaml run --remove-orphans --rm code
+    cmd: container compose -f {{ env "DOTAI" }}/compose.yaml run --remove-orphans --rm code
 
   - name: coderd
     doc: run code container
     cmd: |
       # Get the basename of the current dir
       current_dir=$(basename "$(pwd)")
-      CODER_DIR=${current_dir} container compose -f {{ mustEnv "DOTAI" }}/compose.yaml run --remove-orphans --rm code
+      CODER_DIR=${current_dir} container compose -f {{ env "DOTAI" }}/compose.yaml run --remove-orphans --rm code
 
-  - name: coderk8s
-    doc: run code container
+  - name: coderdocker
+    doc: run code container with docker socket mounted
     cmd: |
       # Get the basename of the current dir
       current_dir=$(basename "$(pwd)")
-      CODER_DIR=${current_dir} container compose -f {{ mustEnv "DOTAI" }}/compose.yaml run --remove-orphans --rm code-k8s
+      CODER_DIR=${current_dir} container compose -f {{ env "DOTAI" }}/compose.yaml run --remove-orphans --rm code-docker
+
+  - name: coderk8s
+    doc: run code container with k8s access
+    cmd: |
+      # Get the basename of the current dir
+      current_dir=$(basename "$(pwd)")
+      CODER_DIR=${current_dir} container compose -f {{ env "DOTAI" }}/compose.yaml run --remove-orphans --rm code-k8s
+
+  - name: coderb
+    doc: build code container
+    cmd: |
+      # Get the basename of the current dir
+      current_dir=$(basename "$(pwd)")
+      CODER_DIR=${current_dir} container compose -f {{ env "DOTAI" }}/compose.yaml build code
 
   - name: coderbr
     doc: build code container
     cmd: |
       # Get the basename of the current dir
       current_dir=$(basename "$(pwd)")
-      CODER_DIR=${current_dir} container compose -f {{ mustEnv "DOTAI" }}/compose.yaml run --build --remove-orphans --rm code
+      CODER_DIR=${current_dir} container compose -f {{ env "DOTAI" }}/compose.yaml run --build --remove-orphans --rm code
 
   - name: coderrb
     doc: rebuild code container
-    cmd: container compose -f {{ mustEnv "DOTAI" }}/compose.yaml build --no-cache code
+    cmd: container compose -f {{ env "DOTAI" }}/compose.yaml build --no-cache code
 
   - name: repeatx
     doc: repeat a command multiple times

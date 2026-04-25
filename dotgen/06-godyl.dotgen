@@ -2,7 +2,7 @@ commands:
   - name: godyld
     doc: download and install godyl
     cmd: |
-      curl -sSL https://raw.githubusercontent.com/idelchi/godyl/refs/heads/main/install.sh | sh -s -- -d {{ mustEnv "GODYL_OUTPUT_DIR" }}
+      curl -sSL https://raw.githubusercontent.com/idelchi/godyl/refs/heads/main/install.sh | sh -s -- -d {{ env "GODYL_OUTPUT_DIR" }}
 
   - name: godylu
     doc: update godyl to the latest version
@@ -10,8 +10,8 @@ commands:
 
   - name: godyla
     doc: install all tools from godyl dump
-    cmd: godyl dump tools -e | godyl i --strategy sync - --output={{ mustEnv "GODYL_OUTPUT_DIR" }}
+    cmd: godyl dump tools -e | godyl i --strategy sync - --output={{ env "GODYL_OUTPUT_DIR" }}
 
   - name: godyli
     doc: install all idelchi tools from godyl dump
-    cmd: godyl dump tools -e | godyl i --tags "idelchi/*" --pre - --output={{ mustEnv "GODYL_OUTPUT_DIR" }}
+    cmd: godyl dump tools -e | godyl i --tags "idelchi/*" --pre - --output={{ env "GODYL_OUTPUT_DIR" }}
