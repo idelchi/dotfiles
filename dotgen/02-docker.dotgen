@@ -27,7 +27,7 @@ commands:
     doc: container compose run
     cmd: container compose run --remove-orphans --rm --entrypoint=
 
-  - name: dcrb
+  - name: dcbr
     doc: container compose run with build
     cmd: container compose run --build --remove-orphans --rm
 
@@ -39,7 +39,7 @@ commands:
     doc: container compose build
     cmd: container compose build
 
-  - name: dcbr
+  - name: dcrb
     doc: container compose rebuild
     cmd: container compose build --no-cache
 
