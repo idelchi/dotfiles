@@ -27,9 +27,7 @@ commands:
   - name: coderb
     doc: build code container
     cmd: |
-      # Get the basename of the current dir
-      current_dir=$(basename "$(pwd)")
-      CODER_DIR=${current_dir} container compose -f {{ env "DOTAI" }}/compose.yaml build code
+      container compose -f {{ env "DOTAI" }}/compose.yaml build code
 
   - name: coderbr
     doc: build code container
