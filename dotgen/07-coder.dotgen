@@ -3,6 +3,7 @@ values:
 ---
 commands:
   - name: coderd
+    kind: function
     doc: run code container
     cmd: |
       # Get the basename of the current dir
@@ -15,8 +16,7 @@ commands:
 
   - name: coderb
     doc: build code container
-    cmd: |
-      container compose -f ${DOTAI}/{{ .COMPOSE }} build code
+    cmd: container compose -f ${DOTAI}/{{ .COMPOSE }} build code
 
   - name: coderrb
     doc: rebuild code container
