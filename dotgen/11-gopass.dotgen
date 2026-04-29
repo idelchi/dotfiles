@@ -1,0 +1,9 @@
+exclude: {{ notInPath "gopass" }}
+
+---
+commands:
+  - name: show
+    cmd: gopass show
+
+  - name: showc
+    cmd: gopass --clip show

@@ -1,0 +1,37 @@
+values:
+  LOCAL_BIN: "{{ .HOME }}/.local/bin"
+  KREW_BIN: "{{ .HOME }}/.krew/bin"
+  CARGO_BIN: "{{ .HOME }}/.cargo/bin"
+
+---
+
+commands:
+  - name: local
+    kind: raw
+    cmd: |
+      {{ if eq .SHELL "zsh" -}}
+      path+=("{{ .LOCAL_BIN }}")
+      {{- else -}}
+      export PATH="{{ .LOCAL_BIN }}:$PATH"
+      {{- end }}
+    exclude: {{ not (exists .LOCAL_BIN) }}
+
+  - name: krew
+    kind: raw
+    cmd: |
+      {{ if eq .SHELL "zsh" -}}
+      path+=("{{ .KREW_BIN }}")
+      {{- else -}}
+      export PATH="{{ .KREW_BIN }}:$PATH"
+      {{- end }}
+    exclude: {{ not (exists .KREW_BIN) }}
+
+  - name: cargo
+    kind: raw
+    cmd: |
+      {{ if eq .SHELL "zsh" -}}
+      path+=("{{ .CARGO_BIN }}")
+      {{- else -}}
+      export PATH="{{ .CARGO_BIN }}:$PATH"
+      {{- end }}
+    exclude: {{ not (exists .CARGO_BIN) }}

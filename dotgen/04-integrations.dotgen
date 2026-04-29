@@ -20,6 +20,8 @@ values:
       01-task.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
 
 ---
+env:
+  STARSHIP_LOG: error
 
 commands:
   - name: starship integration

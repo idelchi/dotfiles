@@ -1,0 +1,26 @@
+exclude: {{ and (env "WSL_DISTRO_NAME" | empty) (ne .OS "windows") }}
+
+---
+commands:
+  - name: cliprun
+    kind: function
+    cmd: |
+      local cmd out
+
+      cmd="$(powershell.exe -NoProfile -Command Get-Clipboard | tr -d '\r')"
+      out="$(eval "$cmd" 2>&1)"
+
+      print -r -- "$out" | clip.exe
+      print -r -- "$out"
+
+  - name: cliprun:zsh
+    kind: raw
+    cmd: |
+      cliprun-widget() {
+        zle -I
+        cliprun
+      }
+      zle -N cliprun-widget
+      bindkey '^X^R' cliprun-widget
+    shell:
+      - zsh

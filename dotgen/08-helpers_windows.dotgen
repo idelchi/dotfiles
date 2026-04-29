@@ -70,3 +70,8 @@
       else
         explorer.exe "${1}"
       fi
+
+  - name: wsli
+    doc: run a command in wsl
+    kind: function
+    cmd: wsl bash -lic "zsh -lic '$*'"
