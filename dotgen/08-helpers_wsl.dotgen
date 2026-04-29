@@ -1,6 +1,3 @@
-exclude: {{ env "WSL_DISTRO_NAME" | empty }}
-
----
 commands:
 - name: git
   cmd: git.exe

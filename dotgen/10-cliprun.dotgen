@@ -1,4 +1,4 @@
-exclude: {{ and (env "WSL_DISTRO_NAME" | empty) (ne .OS "windows") }}
+exclude: {{ and (not isWSL) (ne .OS "windows") }}
 
 ---
 commands:
