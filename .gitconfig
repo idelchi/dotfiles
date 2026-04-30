@@ -59,7 +59,7 @@
             echo '--- Committing'; \
             git commit -am \"$1\"; \
         else \
-            if curl -s --max-time 1 http://garfield:11434 | grep -q 'Ollama is running'; then \
+            if curl -s --max-time 1 http://garfield.garfield-labs.com:11434 | grep -q 'Ollama is running'; then \
                 echo '--- Generating commit message and committing'; \
                 gocom --readme --commit --yes; \
             else \

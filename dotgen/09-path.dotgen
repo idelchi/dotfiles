@@ -9,29 +9,32 @@ commands:
   - name: local
     kind: raw
     cmd: |
+      posix_path="{{ posixPath .LOCAL_BIN }}"
       {{ if eq .SHELL "zsh" -}}
-      path+=("{{ .LOCAL_BIN }}")
+      path+=("${posix_path}")
       {{- else -}}
-      export PATH="{{ .LOCAL_BIN }}:$PATH"
+      export PATH="${posix_path}:$PATH"
       {{- end }}
     exclude: {{ not (exists .LOCAL_BIN) }}
 
   - name: krew
     kind: raw
     cmd: |
+      posix_path="{{ posixPath .KREW_BIN }}"
       {{ if eq .SHELL "zsh" -}}
-      path+=("{{ .KREW_BIN }}")
+      path+=("${posix_path}")
       {{- else -}}
-      export PATH="{{ .KREW_BIN }}:$PATH"
+      export PATH="${posix_path}:$PATH"
       {{- end }}
     exclude: {{ not (exists .KREW_BIN) }}
 
   - name: cargo
     kind: raw
     cmd: |
+      posix_path="{{ posixPath .CARGO_BIN }}"
       {{ if eq .SHELL "zsh" -}}
-      path+=("{{ .CARGO_BIN }}")
+      path+=("${posix_path}")
       {{- else -}}
-      export PATH="{{ .CARGO_BIN }}:$PATH"
+      export PATH="${posix_path}:$PATH"
       {{- end }}
     exclude: {{ not (exists .CARGO_BIN) }}

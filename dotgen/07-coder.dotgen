@@ -1,6 +1,3 @@
-values:
-  COMPOSE: compose.yaml
----
 commands:
   - name: coderd
     kind: function
@@ -10,17 +7,17 @@ commands:
       current_dir=$(basename "$(pwd)")
       # If CODER_INIT is set to 1, run the init command first
       if [ "${CODER_INIT}" = "1" ]; then
-        CODER_DIR=${current_dir} container compose -f ${DOTAI}/{{ .COMPOSE }} run --remove-orphans --rm init
+        CODER_DIR=${current_dir} container compose --project-directory ${DOTAI} run --remove-orphans --rm init
       fi
-      CODER_DIR=${current_dir} container compose -f ${DOTAI}/{{ .COMPOSE }} run --remove-orphans --rm --name code-${current_dir}-${RANDOM} code
+      CODER_DIR=${current_dir} container compose --project-directory ${DOTAI} run --remove-orphans --rm --name code-${current_dir}-${RANDOM} code
 
   - name: coderb
     doc: build code container
-    cmd: container compose -f ${DOTAI}/{{ .COMPOSE }} build code
+    cmd: container compose --project-directory ${DOTAI} build code
 
   - name: coderrb
     doc: rebuild code container
-    cmd: container compose -f ${DOTAI}/{{ .COMPOSE }} build --no-cache code
+    cmd: container compose --project-directory ${DOTAI} build --no-cache code
 
   - name: repeatx
     doc: repeat a command multiple times
