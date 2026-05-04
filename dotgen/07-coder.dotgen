@@ -9,7 +9,20 @@ commands:
       if [ "${CODER_INIT}" = "1" ]; then
         CODER_DIR=${current_dir} container compose --project-directory ${DOTAI} run --remove-orphans --rm init
       fi
-      CODER_DIR=${current_dir} container compose --project-directory ${DOTAI} run --remove-orphans --rm --name code-${current_dir}-${RANDOM} code
+      # Build --env-from-file flags for any present env files
+      env_from_file_args=()
+      for f in .env secrets.env tokens.env; do
+        [ -f "${f}" ] && env_from_file_args+=(--env-from-file "${f}")
+      done
+
+      CODER_DIR=${current_dir} container compose \
+        --project-directory ${DOTAI} \
+        run \
+        --remove-orphans \
+        --rm \
+        --name code-${current_dir}-${RANDOM} \
+        "${env_from_file_args[@]}" \
+        code
 
   - name: coderb
     doc: build code container
