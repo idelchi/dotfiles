@@ -17,6 +17,38 @@ fail() {
   exit 1
 }
 
+write_hash_trace() {
+  local output tmp file
+
+  output="${1}"
+  tmp="$(mktemp)" || return 1
+
+  {
+    printf '%s\n' '# dotgen hash trace v1'
+    printf '%s\n' '# Included file hashes'
+
+    dotgen "${SCRIPT_DIR}/dotgen" ${DOTGEN_ADDITIONAL_ARGS} --shell "${CURRENT_SHELL}" --dry 2>/dev/null | sort | while IFS= read -r file; do
+      [[ -n "${file}" ]] || continue
+
+      if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "${file}"
+      elif command -v shasum >/dev/null 2>&1; then
+        shasum -a 256 "${file}"
+      else
+        cksum "${file}"
+      fi
+    done
+
+    printf '\n%s\n' '# dotgen --debug'
+    dotgen "${SCRIPT_DIR}/dotgen" ${DOTGEN_ADDITIONAL_ARGS} --shell "${CURRENT_SHELL}" --debug 2>/dev/null
+  } > "${tmp}" || {
+    rm -f "${tmp}"
+    return 1
+  }
+
+  mv "${tmp}" "${output}"
+}
+
 # Normalize env flags
 [[ "${REBUILD_CACHE:-}" = "true" ]] || unset REBUILD_CACHE
 [[ "${SHELL_DEBUG:-}" = "true" ]] || unset SHELL_DEBUG
@@ -40,6 +72,7 @@ export NoDefaultCurrentDirectoryInExePath=true
 
 DOTGEN_DIR="${HOME}/.cache/dotgen/${CURRENT_SHELL}"
 DOTGEN_HASH_FILE="${DOTGEN_DIR}/dotgen.hash"
+DOTGEN_HASH_TRACE_FILE="${DOTGEN_DIR}/dotgen.hash.trace"
 DOTGEN_RC_FILE="${DOTGEN_DIR}/dotgen.rc"
 
 # Determine if rebuild needed
@@ -48,6 +81,7 @@ due_to=""
 
 # Compute new hash
 new_hash_file="$(mktemp)"
+new_hash_trace_file=""
 dotgen "${SCRIPT_DIR}/dotgen" ${DOTGEN_ADDITIONAL_ARGS} --shell "${CURRENT_SHELL}" --hash > "${new_hash_file}" || return 1
 
 if [[ "${REBUILD_CACHE:-}" = "true" ]]; then
@@ -60,6 +94,20 @@ else
   if ! cmp -s "${new_hash_file}" "${DOTGEN_HASH_FILE}"; then
     need_rebuild=true
     due_to="input files changed"
+
+    new_hash_trace_file="$(mktemp)"
+    if write_hash_trace "${new_hash_trace_file}"; then
+      if [[ -f "${DOTGEN_HASH_TRACE_FILE}" ]]; then
+        printf '%s\n' "[dotgen]: hash input diff:" >&2
+        diff -u "${DOTGEN_HASH_TRACE_FILE}" "${new_hash_trace_file}" >&2 || true
+      else
+        printf '%s\n' "[dotgen]: hash changed and no previous trace exists" >&2
+      fi
+    else
+      rm -f "${new_hash_trace_file}"
+      new_hash_trace_file=""
+      printf '%s\n' "[dotgen]: hash changed; unable to write diagnostic trace" >&2
+    fi
   fi
 fi
 
@@ -67,8 +115,11 @@ fi
 if [[ "${need_rebuild}" = true ]]; then
   SHELL_DEBUG=true
   if [[ -d "${DOTGEN_DIR}" ]]; then
-    # Delete everything in the cache dir except the hash file
-    find "${DOTGEN_DIR}" -mindepth 1 ! -name "$(basename "${DOTGEN_HASH_FILE}")" -exec rm -rf {} +
+    # Delete everything in the cache dir except the hash files
+    find "${DOTGEN_DIR}" -mindepth 1 \
+      ! -name "$(basename "${DOTGEN_HASH_FILE}")" \
+      ! -name "$(basename "${DOTGEN_HASH_TRACE_FILE}")" \
+      -exec rm -rf {} +
 
   fi
 fi
@@ -108,8 +159,17 @@ if [[ "${need_rebuild}" = true ]]; then
   mkdir -p "${DOTGEN_DIR}"
   mv "${tmp_rc_file}" "${DOTGEN_RC_FILE}"
   mv "${new_hash_file}" "${DOTGEN_HASH_FILE}"
+  if [[ -n "${new_hash_trace_file}" ]] && [[ -f "${new_hash_trace_file}" ]]; then
+    mv "${new_hash_trace_file}" "${DOTGEN_HASH_TRACE_FILE}"
+  else
+    write_hash_trace "${DOTGEN_HASH_TRACE_FILE}" || true
+  fi
 else
   rm -f "${new_hash_file}"
+  if [[ ! -f "${DOTGEN_HASH_TRACE_FILE}" ]]; then
+    mkdir -p "${DOTGEN_DIR}"
+    write_hash_trace "${DOTGEN_HASH_TRACE_FILE}" || true
+  fi
 fi
 
 # Source result
@@ -128,6 +188,7 @@ debug_msg "  - took (${src_elapsed_ms} ms)"
 
 # 9) Cleanup
 unset SHELL_DEBUG REBUILD_CACHE CURRENT_SHELL SCRIPT_DIR
-unset DOTGEN_ADDITIONAL_ARGS DOTGEN_DIR DOTGEN_HASH_FILE DOTGEN_RC_FILE DOTGEN_INSTRUMENT
-unset new_hash_file tmp_rc_file start_ns end_ns elapsed_ms src_start_ns src_end_ns src_elapsed_ms need_rebuild due_to
+unset DOTGEN_ADDITIONAL_ARGS DOTGEN_DIR DOTGEN_HASH_FILE DOTGEN_HASH_TRACE_FILE DOTGEN_RC_FILE DOTGEN_INSTRUMENT
+unset new_hash_file new_hash_trace_file tmp_rc_file start_ns end_ns elapsed_ms src_start_ns src_end_ns src_elapsed_ms need_rebuild due_to
 unset NoDefaultCurrentDirectoryInExePath
+unset -f write_hash_trace

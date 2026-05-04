@@ -16,3 +16,9 @@ commands:
       for i in $(seq 1 "${count}"); do
         eval "${command}"
       done
+
+  - name: pe
+    doc: print environment variables
+    kind: alias
+    cmd: |
+      printenv
