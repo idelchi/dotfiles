@@ -35,6 +35,7 @@ source "${HOME}/.local/share/zinit/zinit.git/zinit.zsh"
 # Load fzf-tab after compinit
 zinit light Aloxaf/fzf-tab
 zstyle ':fzf-tab:*' fzf-command 'env MSYS2_ARG_CONV_EXCL=* fzf'
+zstyle ':fzf-tab:*' continuous-trigger '/'
 
 # Command suggestions
 zinit ice wait lucid atload'!_zsh_autosuggest_start'
