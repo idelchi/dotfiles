@@ -13,13 +13,17 @@ commands:
     cmd: "{{ .SUDO }}godyl update --pre --force"
 
   - name: godyla
-    doc: install all tools from godyl dump
-    cmd: godyl dump tools -e | {{ .SUDO }}godyl i --strategy sync -
+    doc: install/sync all tools from godyl dump
+    cmd: godyl dump tools -e | {{ .SUDO }}godyl i -
+
+  - name: godyls
+    doc: install/sync all tools for tools file
+    cmd: "{{ .SUDO }}godyl i"
 
   - name: godyli
-    doc: install all idelchi tools from godyl dump
+    doc: install/sync all idelchi tools from godyl dump
     cmd: godyl dump tools -e | {{ .SUDO }}godyl i --tags "idelchi/*" --pre -
 
   - name: godylgit
-    doc: install all gitlab related tools from godyl dump
-    cmd: "{{ .SUDO }}godyl -j=2 -d ${GODYL_BASE_DIR}/defaults.yml i --strategy force ${GODYL_BASE_DIR}/gitlab.yml"
+    doc: force install all gitlab related tools from godyl dump
+    cmd: "{{ .SUDO }}godyl -d ${GODYL_BASE_DIR}/defaults.yml i --strategy force ${GODYL_BASE_DIR}/gitlab.yml"
