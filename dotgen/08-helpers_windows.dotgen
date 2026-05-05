@@ -59,7 +59,7 @@
 
   - name: gg
     doc: open git-gui
-    cmd: git gui
+    cmd: git-gui
 
   - name: open
     doc: open current or specified directory in explorer
