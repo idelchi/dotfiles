@@ -7,6 +7,12 @@ commands:
     kind: function
     doc: run code container
     cmd: |
+      # Exit early with error message if ${DOTAI} isn't set
+      if [ -z "${DOTAI}" ]; then
+        echo "Error: DOTAI environment variable is not set. Please set it to the path of your .ai directory." >&2
+        exit 1
+      fi
+
       # Get the basename of the current dir
       current_dir=$(basename "$(pwd)")
       # If CODER_INIT is set to 1, run the init command first
@@ -29,9 +35,25 @@ commands:
         code
 
   - name: coderb
+    kind: function
     doc: build code container
-    cmd: container compose --project-directory ${DOTAI} build code
+    cmd: |
+      # Exit early with error message if ${DOTAI} isn't set
+      if [ -z "${DOTAI}" ]; then
+        echo "Error: DOTAI environment variable is not set. Please set it to the path of your .ai directory." >&2
+        exit 1
+      fi
+
+      container compose --project-directory ${DOTAI} build code
 
   - name: coderrb
+    kind: function
     doc: rebuild code container
-    cmd: container compose --project-directory ${DOTAI} build --no-cache code
+    cmd: |
+      # Exit early with error message if ${DOTAI} isn't set
+      if [ -z "${DOTAI}" ]; then
+        echo "Error: DOTAI environment variable is not set. Please set it to the path of your .ai directory." >&2
+        exit 1
+      fi
+
+      container compose --project-directory ${DOTAI} build --no-cache code
