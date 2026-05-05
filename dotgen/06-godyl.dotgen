@@ -17,8 +17,12 @@ commands:
     cmd: godyl dump tools -e | {{ .SUDO }}godyl i -
 
   - name: godyls
-    doc: install/sync all tools for tools file
+    doc: install/sync all tools from the tools file
     cmd: "{{ .SUDO }}godyl i"
+
+  - name: godyle
+    doc: install/sync all existing tools
+    cmd: "{{ .SUDO }}godyl i --strategy=existing"
 
   - name: godyli
     doc: install/sync all idelchi tools from godyl dump
