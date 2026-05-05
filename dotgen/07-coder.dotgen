@@ -1,3 +1,7 @@
+exclude: {{ and (notInPath "docker") (notInPath "podman") }}
+
+---
+
 commands:
   - name: coderd
     kind: function
@@ -31,21 +35,3 @@ commands:
   - name: coderrb
     doc: rebuild code container
     cmd: container compose --project-directory ${DOTAI} build --no-cache code
-
-  - name: repeatx
-    doc: repeat a command multiple times
-    kind: function
-    cmd: |
-      if [ -z "${1}" ]; then
-        echo "Usage: repeatx <command> [count]"
-        return 1
-      fi
-
-      command=${1}
-      count=${2:-10}
-
-      echo "repeating command '${command}' ${count} times:"
-
-      for i in $(seq 1 "${count}"); do
-        eval "${command}"
-      done
