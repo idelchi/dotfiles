@@ -6,7 +6,7 @@ commands:
   - name: godyld
     doc: download and install godyl
     cmd: |
-      curl -sSL https://raw.githubusercontent.com/idelchi/godyl/refs/heads/main/install.sh | {{ .SUDO }}sh -s -- -d ${GODYL_OUTPUT_DIR}
+      curl -sSL https://raw.githubusercontent.com/idelchi/godyl/refs/heads/main/install.sh | {{ .SUDO }}sh -s --
 
   - name: godylu
     doc: update godyl to the latest version
@@ -14,12 +14,12 @@ commands:
 
   - name: godyla
     doc: install all tools from godyl dump
-    cmd: godyl dump tools -e | {{ .SUDO }}godyl i --strategy sync - --output=${GODYL_OUTPUT_DIR}
+    cmd: godyl dump tools -e | {{ .SUDO }}godyl i --strategy sync -
 
   - name: godyli
     doc: install all idelchi tools from godyl dump
-    cmd: godyl dump tools -e | {{ .SUDO }}godyl i --tags "idelchi/*" --pre - --output=${GODYL_OUTPUT_DIR}
+    cmd: godyl dump tools -e | {{ .SUDO }}godyl i --tags "idelchi/*" --pre -
 
   - name: godylgit
     doc: install all gitlab related tools from godyl dump
-    cmd: "{{ .SUDO }}godyl -j=2 -d ${GODYL_BASE_DIR}/defaults.yml i --strategy force --output=${GODYL_OUTPUT_DIR} ${GODYL_BASE_DIR}/gitlab.yml"
+    cmd: "{{ .SUDO }}godyl -j=2 -d ${GODYL_BASE_DIR}/defaults.yml i --strategy force ${GODYL_BASE_DIR}/gitlab.yml"
