@@ -1,4 +1,4 @@
-export USER="${USER:-${LOGNAME:-$USERNAME}}"
+export USER="$(printenv USERNAME)"
 
 # DOTGEN_ADDITIONAL_ARGS=/path/to/your/additional/args
 
