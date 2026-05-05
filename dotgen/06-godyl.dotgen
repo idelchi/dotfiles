@@ -26,7 +26,7 @@ commands:
 
   - name: godyli
     doc: install/sync all idelchi tools from godyl dump
-    cmd: godyl dump tools -e | {{ .SUDO }}godyl i --tags "idelchi/*" --pre --strategy=force -
+    cmd: godyl dump tools -e | {{ .SUDO }}godyl i --tags "idelchi/*" --pre --strategy force -
 
   - name: godylgit
     doc: force install all gitlab related tools from godyl dump
