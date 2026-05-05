@@ -26,4 +26,4 @@ commands:
 
   - name: godylgit
     doc: force install all gitlab related tools from godyl dump
-    cmd: "{{ .SUDO }}godyl -d ${GODYL_BASE_DIR}/defaults.yml i --strategy force ${GODYL_BASE_DIR}/gitlab.yml"
+    cmd: "{{ .SUDO }}godyl -j=2 -d ${GODYL_BASE_DIR}/defaults.yml i --strategy force ${GODYL_BASE_DIR}/gitlab.yml"
