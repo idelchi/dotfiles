@@ -77,7 +77,9 @@ commands:
       {{- else -}}
       export PATH="{{ join .ZINIT_PLUGINS_DIR "thecasualcoder---kube-fzf" | posixPath }}:$PATH"
       {{- end }}
-    exclude: {{ or (notInPath "fzf") (notInPath "kubectl") }}
+    exclude:
+      - {{ notInPath "fzf" }}
+      - {{ notInPath "kubectl" }}
 
 
   - name: fzf-docker shortcuts
@@ -85,7 +87,9 @@ commands:
     kind: run
     cmd: sed 's/<< CONTAINER >>/docker/g' {{ .DOTGEN_CURRENT_DIR }}/rc/02-container-fzf.rc
     export_to: {{ .DOTGEN_SOURCE_DIR }}/05-docker-fzf.rc
-    exclude: {{ or (notInPath "fzf") (notInPath "docker") }}
+    exclude:
+      - {{ notInPath "fzf" }}
+      - {{ notInPath "docker" }}
     shell:
       - zsh
 
@@ -94,7 +98,10 @@ commands:
     kind: run
     cmd: sed 's/<< CONTAINER >>/podman/g' {{ .DOTGEN_CURRENT_DIR }}/rc/02-container-fzf.rc
     export_to: {{ .DOTGEN_SOURCE_DIR }}/06-podman-fzf.rc
-    exclude: {{ not (and (inPath "fzf") (inPath "podman") (notInPath "docker")) }}
+    exclude:
+      - {{ notInPath "fzf" }}
+      - {{ notInPath "podman" }}
+      - {{ inPath "docker" }}
     shell:
       - zsh
 

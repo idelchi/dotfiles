@@ -1,4 +1,7 @@
-exclude: {{ or (and (notInPath "docker") (notInPath "podman")) (not (envIsSet "DOTAI")) (eq (env "DOTAI") "") }}
+exclude:
+  - {{ and (notInPath "docker") (notInPath "podman") }}
+  - {{ not (envIsSet "DOTAI") }}
+  - {{ eq (env "DOTAI") "" }}
 
 ---
 

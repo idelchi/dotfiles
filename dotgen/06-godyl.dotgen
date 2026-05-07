@@ -1,6 +1,8 @@
 values:
   SUDO: '{{ if eq .OS "linux" }}sudo {{ end }}'
 
+exclude: {{ and (eq .OS "linux") (notInPath "sudo") }}
+
 ---
 commands:
   - name: godyld
