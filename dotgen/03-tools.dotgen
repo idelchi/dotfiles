@@ -23,6 +23,14 @@ commands:
     doc: git status
     cmd: git status
 
+  - name: gl
+    doc: git log
+    cmd: git log
+
+  - name: glp
+    doc: git log with pretty format
+    cmd: git log --oneline --graph --decorate
+
   - name: n
     doc: nano text editor
     cmd: nano
