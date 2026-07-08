@@ -34,7 +34,15 @@ commands:
   - name: zoxide integration
     doc: zoxide shell integration
     kind: run
-    cmd: zoxide init "{{ .SHELL }}" --cmd cd
+    cmd: |
+      zoxide init "{{ .SHELL }}" --cmd cd
+      {{- if eq .OS "windows" }}
+      cat <<'EOF'
+      function __zoxide_pwd() {
+          \command cygpath -w "$(\builtin pwd -L)"
+      }
+      EOF
+      {{- end }}
     export_to: {{ .DOTGEN_SOURCE_DIR }}/01-zoxide.rc
     exclude: {{ notInPath "zoxide" }}
 
@@ -92,5 +100,3 @@ commands:
     exclude: {{ notInPath "dirstat" }}
     shell:
       - zsh
-
-
