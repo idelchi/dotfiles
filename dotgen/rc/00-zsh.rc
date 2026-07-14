@@ -43,6 +43,7 @@ zinit light zsh-users/zsh-autosuggestions
 
 # Syntax highlighting
 # Adds an exception for the very slow `git checkout` command.
+# TODO(Idelchi): `fetch` is also slow
 zinit ice wait lucid atload'!
 -fast-highlight-init
 -fast-highlight-process "" "git" 0 >/dev/null 2>&1

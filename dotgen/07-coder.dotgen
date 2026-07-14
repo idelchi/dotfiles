@@ -12,6 +12,11 @@ commands:
     cmd: |
       # Get the basename of the current dir
       current_dir=$(basename "$(pwd)")
+      # If CODER_DIR already is set, use it instead of the current dir
+      if [ -n "${CODER_DIR}" ]; then
+        current_dir="${CODER_DIR}"
+      fi
+
       # If CODER_INIT is set to 1, run the init command first
       if [ "${CODER_INIT}" = "1" ]; then
         CODER_DIR=${current_dir} container compose --project-directory ${DOTAI} run --remove-orphans --rm init
