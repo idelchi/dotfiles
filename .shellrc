@@ -83,6 +83,7 @@ DOTGEN_HASH_FILE="${DOTGEN_DIR}/dotgen.hash"
 DOTGEN_HASH_TRACE_FILE="${DOTGEN_DIR}/dotgen.hash.trace"
 DOTGEN_RC_FILE="${DOTGEN_DIR}/dotgen.rc"
 DOTGEN_ENV_FILES="${SCRIPT_DIR}/dotgen"
+DOTGEN_PARALLEL="${DOTGEN_PARALLEL:-4}"
 
 # Determine if rebuild needed
 need_rebuild=false
@@ -164,6 +165,7 @@ if [[ "${need_rebuild}" = true ]]; then
     "${SCRIPT_DIR}/dotgen" \
     --env-file "${DOTGEN_ENV_FILES}" \
     ${DOTGEN_ADDITIONAL_ARGS} \
+    --parallel "${DOTGEN_PARALLEL}" \
     --shell "${CURRENT_SHELL}" > "${tmp_rc_file}" || return 1
 
   end_ns="$(date +%s%N 2>/dev/null || echo 0)"
@@ -203,7 +205,7 @@ debug_msg "  - took (${src_elapsed_ms} ms)"
 
 # 9) Cleanup
 unset SHELL_DEBUG REBUILD_CACHE CURRENT_SHELL SCRIPT_DIR
-unset DOTGEN_ADDITIONAL_ARGS DOTGEN_DIR DOTGEN_HASH_FILE DOTGEN_HASH_TRACE_FILE DOTGEN_RC_FILE DOTGEN_ENV_FILES DOTGEN_INSTRUMENT
+unset DOTGEN_ADDITIONAL_ARGS DOTGEN_DIR DOTGEN_HASH_FILE DOTGEN_HASH_TRACE_FILE DOTGEN_RC_FILE DOTGEN_ENV_FILES DOTGEN_PARALLEL DOTGEN_INSTRUMENT
 unset new_hash_file new_hash_trace_file tmp_rc_file start_ns end_ns elapsed_ms src_start_ns src_end_ns src_elapsed_ms need_rebuild due_to
 unset NoDefaultCurrentDirectoryInExePath
 unset -f write_hash_trace
