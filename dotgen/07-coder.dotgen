@@ -47,3 +47,9 @@ commands:
     doc: rebuild code container
     cmd: |
       container compose --project-directory ${DOTAI} build --no-cache code
+
+  - name: codercb
+    kind: function
+    doc: cache bust code container
+    cmd: |
+      container compose --project-directory ${DOTAI} build --build-arg CACHE_BUST=$(date +%s) code
