@@ -2,28 +2,23 @@ values:
   DOTGEN_SOURCE_DIR: "{{ .CACHE_DIR }}/dotgen/{{ .SHELL }}/source/completions"
   ZINIT_PLUGINS_DIR: "{{ .HOME }}/.local/share/zinit/plugins"
 
-  # Force rerun if dependencies change
-  deps:
-    # Force rerun if any tool is changed
-    tools:
-      task: "{{ which "task" | size }}"
-      docker: "{{ which "docker" | size }}"
-      helm: "{{ which "helm" | size }}"
-      kubectl: "{{ which "kubectl" | size }}"
-      k9s: "{{ which "k9s" | size }}"
-      kubectl-fzf-completion: "{{ which "kubectl-fzf-completion" | size }}"
-      godyl: "{{ which "godyl" | size }}"
-      aggr: "{{ which "aggr" | size }}"
-      envprof: "{{ which "envprof" | size }}"
-      slot: "{{ which "slot" | size }}"
-      dotgen: "{{ which "dotgen" | size }}"
-      dirstat: "{{ which "dirstat" | size }}"
-      podman: "{{ which "podman" | size }}"
-    # Force rerun if any file is changed
-    files:
-      docker-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/02-docker-fzf.rc" | size }}"
-      podman-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/03-podman-fzf.rc" | size }}"
-      kubectl-fzf.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/03-kubectl-fzf.rc" | size }}"
+dependencies:
+  executables:
+    - task
+    - docker
+    - helm
+    - kubectl
+    - k9s
+    - kubectl-fzf-completion
+    - godyl
+    - aggr
+    - envprof
+    - slot
+    - dotgen
+    - dirstat
+    - podman
+  files:
+    - rc/02-container-fzf.rc
 
 ---
 

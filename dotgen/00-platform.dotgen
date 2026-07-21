@@ -1,8 +1,6 @@
-values:
-  deps:
-    # Forces a rerun if any tool is changed
-    tools:
-      dotgen: "{{ which "dotgen" | size }}"
+dependencies:
+  executables:
+    - dotgen
 
 ---
 

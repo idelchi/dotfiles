@@ -1,23 +1,19 @@
 values:
   DOTGEN_SOURCE_DIR: "{{ .CACHE_DIR }}/dotgen/{{ .SHELL }}/source/integrations"
 
-  # Force rerun if dependencies change
-  deps:
-    # Force rerun if any tool is changed
-    tools:
-      starship: "{{ which "starship" | size }}"
-      zoxide: "{{ which "zoxide" | size }}"
-      direnv: "{{ which "direnv" | size }}"
-      gh: "{{ which "gh" | size }}"
-      slot: "{{ which "slot" | size }}"
-      task: "{{ which "task" | size }}"
-      atuin: "{{ which "atuin" | size }}"
-      kubectl: "{{ which "kubectl" | size }}"
-      fzf: "{{ which "fzf" | size }}"
-
-    # Force rerun if any file is changed
-    files:
-      01-task.rc: "{{ resolve .DOTGEN_CURRENT_DIR "rc/01-task.rc" | size }}"
+dependencies:
+  executables:
+    - starship
+    - zoxide
+    - direnv
+    - gh
+    - slot
+    - task
+    - atuin
+    - kubectl
+    - fzf
+  files:
+    - rc/01-task.rc
 
 ---
 env:

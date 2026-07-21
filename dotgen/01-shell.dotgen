@@ -1,10 +1,9 @@
 values:
   DOTGEN_SOURCE_DIR: "{{ .CACHE_DIR }}/dotgen/{{ .SHELL }}/source/rc"
 
-  deps:
-    # Forces a rerun if any file is changed
-    files:
-      00-zsh.rc: "{{ join .DOTGEN_CURRENT_DIR "rc/00-zsh.rc" | size }}"
+dependencies:
+  files:
+    - rc/00-zsh.rc
 
 ---
 
