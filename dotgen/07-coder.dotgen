@@ -52,4 +52,5 @@ commands:
     kind: function
     doc: cache bust code container
     cmd: |
-      container compose --project-directory ${DOTAI} build --build-arg CACHE_BUST=$(date +%s) code
+      sed -i "s/^CACHE_BUST=.*/CACHE_BUST=$(date +%s)/" ${DOTAI}/.env
+      container compose --project-directory ${DOTAI} build code
