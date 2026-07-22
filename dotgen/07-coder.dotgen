@@ -46,6 +46,7 @@ commands:
     kind: function
     doc: rebuild code container
     cmd: |
+      sed -i "s/^CACHE_BUST=.*/CACHE_BUST=$(date +%s)/" ${DOTAI}/.env
       container compose --project-directory ${DOTAI} build --no-cache code
 
   - name: codercb
