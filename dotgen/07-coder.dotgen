@@ -46,6 +46,10 @@ commands:
     kind: function
     doc: rebuild code container
     cmd: |
+      # If the entry doesn't exist yet, create it with a timestamp
+      if ! grep -q "^CACHE_BUST=" ${DOTAI}/.env; then
+        echo "CACHE_BUST=$(date +%s)" >> ${DOTAI}/.env
+      fi
       sed -i "s/^CACHE_BUST=.*/CACHE_BUST=$(date +%s)/" ${DOTAI}/.env
       container compose --project-directory ${DOTAI} build --no-cache code
 
@@ -53,5 +57,9 @@ commands:
     kind: function
     doc: cache bust code container
     cmd: |
+      # If the entry doesn't exist yet, create it with a timestamp
+      if ! grep -q "^CACHE_BUST=" ${DOTAI}/.env; then
+        echo "CACHE_BUST=$(date +%s)" >> ${DOTAI}/.env
+      fi
       sed -i "s/^CACHE_BUST=.*/CACHE_BUST=$(date +%s)/" ${DOTAI}/.env
       container compose --project-directory ${DOTAI} build code
