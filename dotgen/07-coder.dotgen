@@ -40,7 +40,7 @@ commands:
     kind: function
     doc: build code container
     cmd: |
-      container compose --project-directory ${DOTAI} build code
+      container compose --project-directory ${DOTAI} build code-build
 
   - name: coderrb
     kind: function
@@ -51,7 +51,7 @@ commands:
         echo "CACHE_BUST=$(date +%s)" >> ${DOTAI}/.env
       fi
       sed -i "s/^CACHE_BUST=.*/CACHE_BUST=$(date +%s)/" ${DOTAI}/.env
-      container compose --project-directory ${DOTAI} build --no-cache code
+      container compose --project-directory ${DOTAI} build --no-cache code-build
 
   - name: codercb
     kind: function
@@ -62,4 +62,4 @@ commands:
         echo "CACHE_BUST=$(date +%s)" >> ${DOTAI}/.env
       fi
       sed -i "s/^CACHE_BUST=.*/CACHE_BUST=$(date +%s)/" ${DOTAI}/.env
-      container compose --project-directory ${DOTAI} build code
+      container compose --project-directory ${DOTAI} build code-build
