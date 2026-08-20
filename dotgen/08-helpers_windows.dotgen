@@ -74,4 +74,4 @@
   - name: wsli
     doc: run a command in wsl
     kind: function
-    cmd: wsl bash -lic "zsh -lic '$*'"
+    cmd: wsl zsh -lic "$*"
